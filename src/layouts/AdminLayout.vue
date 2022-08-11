@@ -1,6 +1,7 @@
 <template>
     <div>
-        <el-row>
+        <div class="header">
+            <el-row>
             <el-col :span="24">
                 <div class="grid-content bg-purple-dark">
                     <div class="logo">
@@ -22,6 +23,7 @@
                 </div>
             </el-col>
         </el-row>
+        </div>
         <router-view/>
     </div>
 </template>

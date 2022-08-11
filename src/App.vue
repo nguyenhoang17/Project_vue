@@ -1,24 +1,27 @@
 <template>
   <div id="app">
-    <!-- <AdminLayout/> -->
-    <LoginLayout/>
+    <AdminLayout/>
+    <!-- <LoginLayout/> -->
   </div>
 </template>
 
 <script>
-// import AdminLayout from './layouts/AdminLayout'
-import LoginLayout from './layouts/LoginLayout'
+import AdminLayout from './layouts/AdminLayout'
+// import LoginLayout from './layouts/LoginLayout'
 
 export default {
   name: 'App',
   components: {
-    // AdminLayout,
-    LoginLayout,
+    AdminLayout,
+    // LoginLayout,
 }
 }
 </script>
 
 <style>
+body{
+  margin: 0;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

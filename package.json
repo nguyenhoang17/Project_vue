@@ -11,7 +11,10 @@
     "core-js": "^3.8.3",
     "element-ui": "^2.15.9",
     "vue": "^2.6.14",
-    "vue-router": "^3.5.1"
+    "vue-router": "^3.5.1",
+    "vue2-perfect-scrollbar": "^1.5.5",
+    "vuedraggable": "^2.24.3",
+    "vuex": "^3.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
