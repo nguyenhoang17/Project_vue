@@ -1,45 +1,153 @@
 <template>
 <div class="login-box">
-  <h2>Đăng nhập</h2>
+  <h2>Đăng ký</h2>
   <form>
     <div class="user-box">
-      <input type="text" name="" required="">
+      <input type="text" name="" required="" v-model="name">
       <label>Họ và tên</label>
+      <span class="error">{{errorName}}</span>
     </div>
     <div class="user-box">
-      <input type="text" name="" required="">
+      <input type="text" name="" required="" v-model="email">
       <label>Email</label>
+      <span class="error">{{errorEmail}}</span>
     </div>
     <div class="user-box">
-      <input type="password" name="" required="">
+      <input type="password" name="" required="" v-model="password">
       <label>Mật khẩu</label>
+      <span class="error">{{errorPass}}</span>
     </div>
     <div class="user-box">
-      <input type="password" name="" required="">
+      <input type="password" name="" required="" v-model="password_confirm">
       <label>Xác nhận mật khẩu</label>
+      <span class="error">{{errorPassConfirm}}</span>
     </div>
-    <a href="#" @click="redirect('login')">
+    <a style="margin-right: 20px" @click="handleRegister()">
       <span></span>
       <span></span>
       <span></span>
       <span></span>
       Đăng ký
     </a>
+
+    <a @click="redirect('login')">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      Huỷ
+    </a>
   </form>
 </div>
 </template>
 <script>
+import api from '@/api';
+import _ from 'lodash';
+
 export default {
   name: "LoginView",
+  data(){
+    return {
+      name:"",
+      email:"",
+      password:"",
+      password_confirm:"",
+      errorName:"",
+      errorEmail:"",
+      errorPass:"",
+      errorPassConfirm:""
+    }
+  },
   methods:{
-     redirect(value){
+    redirect(value){
             this.$router.push({ path:`/${value}`})
+    },
+    handleRegister(){
+      if(this.validata()){
+        let data ={
+          name : this.name,
+          email: this.email,
+          password: this.password
         }
-  }
+        api.register(data).then(()=>{
+          this.$message({
+            type: 'success',
+            message: 'Đăng ký thành công thành công',
+          })
+          this.$router.push({ name: "login" });
+        }).catch((error) => {
+              let errors = _.get(error, 'response.data.error', {})
+              if (Object.keys(errors).length > 0) {
+                this.errorName = _.get(errors, 'name[0]', '')
+                this.errorEmail = _.get(errors, 'email[0]', '')
+               this.errorPass = _.get(errors, 'password[0]', '')
+              } else{
+                if (Object.keys(errors).length === 0) {
+                  this.$message.error({
+                    type: 'error',
+                    message: "Có lỗi xảy ra, vui lòng thử lại sau."
+                  })
+                }
+              }
+            })
+      }
+    },
+     validata(){
+      let error = false;
+      if(this.name.length===0) {
+        this.errorName = "Tên không được để trống";
+        error = true;
+      }
+      if(this.email.length===0) {
+        this.errorEmail = "Email không được để trống";
+        error = true;
+      }
+      if(this.password.length===0) {
+        this.errorPass = "Mật khẩu không được để trống";
+        error = true;
+      }
+      if(this.password_confirm.length===0) {
+        this.errorPassConfirm = "Mật khẩu xác nhận không được để trống";
+        error = true;
+      }
+      if(this.password !== this.password_confirm) {
+        this.errorPassConfirm = "Mật khẩu xác nhận phải trùng vs mật khẩu";
+        error = true;
+      }
+      return !error;
+     },
+     resetForm(){
+      this.name = ""
+      this.email = ""
+      this.password = ""
+      this.password_confirm = ""
+     }
+  },
+   watch:{
+    name() {
+      this.errorName = ''
+    },
+    email() {
+      this.errorEmail = ''
+    },
+    password() {
+      this.errorPass = ''
+    },
+    password_confirm() {
+      this.errorPassConfirm = ''
+    }
+  },
 }
 </script>
 
 <style>
+.error {
+  color: red;
+  text-align: left;
+}
+.user-box {
+  text-align: left;
+}
 html {
   height: 100%;
 }
@@ -72,6 +180,7 @@ body {
 
 .login-box .user-box {
   position: relative;
+  margin-bottom: 25px;
 }
 
 .login-box .user-box input {
@@ -79,7 +188,7 @@ body {
   padding: 10px 0;
   font-size: 16px;
   color: #fff;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   border: none;
   border-bottom: 1px solid #fff;
   outline: none;

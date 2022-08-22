@@ -5,18 +5,18 @@
             <el-col :span="24">
                 <div class="grid-content bg-purple-dark">
                     <div class="logo">
-                        <img width="97%" src="https://haycafe.vn/wp-content/uploads/2021/11/Anh-avatar-dep-chat-lam-hinh-dai-dien.jpg" alt=""/>
+                        <img width="97%" src="../assets/images/logo.png" alt=""/>
                     </div>
                     <div class="block">
                         <el-dropdown>
                             <span class="el-dropdown-link">
-                               <span id="hello">Xin chào</span> <el-avatar :size="50" :src="circleUrl"></el-avatar>
+                               <el-avatar :size="50" :src="circleUrl"></el-avatar>
                             </span>
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item><div @click="redirect('user')">Thông tin tài khoản</div></el-dropdown-item>
                                 <el-dropdown-item>Đổi mật khẩu</el-dropdown-item>
                                 <el-dropdown-item>Cấu hình</el-dropdown-item>
-                                <el-dropdown-item divided><div @click="redirect('login')">Đăng xuất</div></el-dropdown-item>
+                                <el-dropdown-item divided><div @click="handleLogout()">Đăng xuất</div></el-dropdown-item>
                             </el-dropdown-menu>
                         </el-dropdown>
                     </div>
@@ -28,7 +28,10 @@
     </div>
 </template>
 <script>
+import { mapMutations, mapState} from 'vuex'
+import api from '@/api';
 export default {
+    
   name: 'AdminLayout',
   data () {
       return {
@@ -37,8 +40,23 @@ export default {
       }
     },
     methods:{
+        ...mapState('auth', [
+            'authUser'
+        ]),
+      ...mapMutations('auth', ['updateAccessToken', 'updateLoginStatus']),
         redirect(value){
             this.$router.push({ path:`/${value}`})
+        },
+        handleLogout() {
+            api.logout().then(()=>{
+              this.updateAccessToken("");
+              this.updateLoginStatus(false);
+          this.$message({
+            type: 'success',
+            message: 'Đăng xuất thành công thành công',
+          })
+          this.$router.push({ name: "login" });
+        })
         }
     }
 }

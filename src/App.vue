@@ -1,20 +1,24 @@
 <template>
   <div id="app">
-    <AdminLayout/>
-    <!-- <LoginLayout/> -->
+    <AdminLayout v-if="isAuthenticated"/>
+    <LoginLayout v-else/>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import AdminLayout from './layouts/AdminLayout'
-// import LoginLayout from './layouts/LoginLayout'
+import LoginLayout from './layouts/LoginLayout'
 
 export default {
   name: 'App',
   components: {
     AdminLayout,
-    // LoginLayout,
-}
+    LoginLayout,
+  },
+  computed: {
+    ...mapState('auth',['isAuthenticated'])
+  },
 }
 </script>
 

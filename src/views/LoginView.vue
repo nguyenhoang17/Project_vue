@@ -3,43 +3,120 @@
   <h2>Đăng nhập</h2>
   <form>
     <div class="user-box">
-      <input type="text" name="" required="">
+      <input type="text" name="" required="" v-model="email">
       <label>Email</label>
+      <span class="error">{{errorEmail}}</span>
     </div>
     <div class="user-box">
-      <input type="password" name="" required="">
+      <input type="password" name="" required="" v-model="password">
       <label>Mật khẩu</label>
+      <span class="error">{{errorPass}}</span>
     </div>
-    
-    <a style="margin-right: 7px;" href="#" @click="redirect('')">
+    <a @click="handleLogin()">
       <span></span>
       <span></span>
       <span></span>
       <span></span>
       Đăng nhập
     </a>
-   <a style="margin-left: 0px;" href="#" @click="redirect('register')">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      Đăng ký
-    </a>
   </form>
+  <p class="notaccount" @click="redirect('register')">Bạn chưa có tài khoản?</p>
 </div>
 </template>
 <script>
+import api from '@/api';
+import _ from 'lodash';
+import { mapMutations } from 'vuex';
+
 export default {
   name: "LoginView",
-  methods:{
-        redirect(value){
-            this.$router.push({ path:`/${value}`})
-        }
+  data(){
+    return {
+      email:"",
+      password:"",
+      errorPass:'',
+      errorEmail:"",
     }
+  },
+  methods:{
+    ...mapMutations('auth', ['updateAccessToken', 'updateLoginStatus']),
+    validata() {
+      let error = false;
+      if(this.email.length===0) {
+        this.errorEmail = "Email không được để trống";
+        error = true;
+      }
+      if(this.password.length===0) {
+        this.errorPass = "Mật khẩu không được để trống";
+        error = true;
+      }
+      return !error;
+    },
+    handleLogin() {
+      if(this.validata()){
+        let data ={
+          email: this.email,
+          password: this.password
+        }
+        api.login(data).then((res)=>{
+          console.log(res.data.access_token);
+          this.updateAccessToken(res.data.access_token);
+          this.updateLoginStatus(true);
+          this.getAuthUser()
+          this.$router.push({ name: "Home"});
+          this.$message({
+            type: 'success',
+            message: 'Đăng nhập thành công thành công',
+          })
+        }).catch((error) => {
+           this.$message({
+            type: 'error',
+            message: 'Đăng nhập thành công thành công',
+          })
+              let errors = _.get(error, 'response.data.error', {})
+              if (Object.keys(errors).length > 0) {
+                this.errorEmail = _.get(errors, 'email[0]', '')
+               this.errorPass = _.get(errors, 'password[0]', '')
+              } else{
+                if (Object.keys(errors).length === 0) {
+                  this.$message.error({
+                    type: 'error',
+                    message: "Có lỗi xảy ra, vui lòng thử lại sau."
+                  })
+                }
+              }
+            })
+      }
+    },
+    getAuthUser() {
+      api.getAuthUser().then((res) => {
+        this.updateAuthUser(_.get(res, 'data'))
+      })
+    },
+    redirect(value){
+            this.$router.push({ path:`/${value}`})
+    }
+  }
 }
 </script>
 
 <style>
+.error {
+  color: red;
+  text-align: left;
+}
+.user-box {
+  text-align: left;
+}
+.notaccount{
+  text-align:left;
+  margin:20px 0px 0px 0px;
+  cursor: pointer;
+  color: #ccc;
+}
+.notaccount:hover{
+  color: white;
+}
 html {
   height: 100%;
 }
@@ -72,6 +149,7 @@ body {
 
 .login-box .user-box {
   position: relative;
+  margin-bottom: 25px;
 }
 
 .login-box .user-box input {
@@ -79,7 +157,7 @@ body {
   padding: 10px 0;
   font-size: 16px;
   color: #fff;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   border: none;
   border-bottom: 1px solid #fff;
   outline: none;
@@ -114,7 +192,7 @@ body {
   text-transform: uppercase;
   overflow: hidden;
   transition: .5s;
-  margin-top: 40px;
+  margin-top: 20px;
   letter-spacing: 4px
 }
 
