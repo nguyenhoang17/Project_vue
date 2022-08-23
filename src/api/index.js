@@ -61,7 +61,7 @@ export default {
    getAuthUser() {
     return apiAxios({
         method: 'get',
-        url: 'admin/auth/me'
+        url: 'auth/me'
     })
   },
   logout(){
@@ -70,4 +70,40 @@ export default {
         url: 'auth/logout',
     })
   },
+    //User
+    changePass(data){
+      return apiAxios({
+          method:'put',
+          url:'users/password',
+          data: data
+      })
+    },
+
+    //Danh sách
+    getList(){
+      return apiAxios({
+          method:'get',
+          url:'directories'
+      })
+    },
+    createList(data){
+      return apiAxios({
+          method: 'post',
+          url:'directories',
+          data:data
+      })
+    },
+    updateList(data, id){
+        return apiAxios({
+            method: 'put',
+            url:'directories/' + id,
+            data:data
+        })
+    },
+    deleteList(id){
+        return apiAxios({
+            method: 'delete',
+            url:'directories/' + id,
+        })
+    }
 }

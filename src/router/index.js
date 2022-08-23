@@ -12,8 +12,8 @@ const routes = [
     component: HomeView
   },
   {
-    path: '/user',
-    name: 'User',
+    path: '/me',
+    name: 'Me',
     component: () => import('../views/UpdateUserView.vue')
   },
   {

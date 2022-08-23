@@ -1,4 +1,4 @@
-// import router from "../../../router";
+import router from "../../../router";
 export default {
     namespaced: true,
     state: {
@@ -23,12 +23,12 @@ export default {
        },
     },
 
-    // actions: {
-    //   logout ({commit}) {
-    //     commit('updateLoginStatus', false)
-    //     commit('updateAccessToken', '')
-    //     commit('updateAuthUser', {})
-    //     return router.push({name: 'Login'})
-    //   }
-    // }
+    actions: {
+        logout ({commit}) {
+            commit('updateLoginStatus', false)
+            commit('updateAuthUser', {})
+            commit('updateAccessToken', '')
+            return router.push({name: 'Login'})
+        }
+    }
   }

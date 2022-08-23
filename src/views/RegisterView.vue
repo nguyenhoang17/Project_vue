@@ -72,7 +72,7 @@ export default {
         api.register(data).then(()=>{
           this.$message({
             type: 'success',
-            message: 'Đăng ký thành công thành công',
+            message: 'Đăng ký thành công',
           })
           this.$router.push({ name: "login" });
         }).catch((error) => {
