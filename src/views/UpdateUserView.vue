@@ -5,32 +5,27 @@
       <div class="infor">
         <el-row>
           <el-col :span="12">
+            <p>Ảnh hiện tại</p>
             <div class="grid-content bg-purple">
-              <img id="img_user" :src="circleUrl" alt="">
+              <img id="img_user" :src="'http://vuecourse.zent.edu.vn/storage/users/'+ avatar" alt="">
             </div>
           </el-col>
           <el-col :span="12"><div class="grid-content bg-purple-light">
 
             <el-form :label-position="labelPosition" label-width="100px" >
               <el-form-item label="Họ và tên">
-                <el-input placeholder="Nhập họ tên"></el-input>
+                <el-input placeholder="Nhập họ tên" v-model="name"></el-input>
+                <span style="color: red">{{errorName}}</span>
               </el-form-item>
-              <el-form-item label="Số điện thoại">
-                <el-input placeholder="Nhập số điện thoại"></el-input>
-              </el-form-item>
-              <el-form-item label="Email">
-                <el-input placeholder="Nhập email"></el-input>
-              </el-form-item>
-              <el-form-item label="Địa chỉ">
-                <el-input
-                    type="textarea"
-                    :rows="4"
-                    placeholder="Nhập địa chỉ">
-                </el-input>
+              <el-form-item label="Ảnh mới">
+                <label class="custom-file-upload">
+                  Tải ảnh
+                  <input type="file" @change="onchangeFile">
+                </label>
               </el-form-item>
               <el-form-item>
                 <el-button @click="redirect('')">Huỷ</el-button>
-                <el-button type="primary" @click="redirect('')">Lưu</el-button>
+                <el-button type="primary" @click="handleChangeInfo()">Lưu</el-button>
               </el-form-item>
             </el-form>
           </div></el-col>
@@ -53,7 +48,7 @@
           <div style="text-align: left">
             <el-form-item label="Xác nhận">
               <el-input placeholder="Nhập mật khẩu xác nhận" v-model="newPassConfirm" show-password></el-input>
-              <spann class="error">{{errorPassConfirm}}</spann>
+              <span class="error">{{errorPassConfirm}}</span>
             </el-form-item>
           </div>
 
@@ -72,19 +67,27 @@
 <script>
 import api from '@/api';
 import {mapActions,mapState, mapMutations} from "vuex";
+import _ from "lodash";
 export default {
 
   name: 'UpdateUserView',
   data () {
       return {
-        circleUrl: "https://i.pinimg.com/originals/29/50/31/2950311cf38601374b17b1561ed5163c.jpg",
+        avatar:'',
         labelPosition: 'left',
         newPass:'',
         errorNewPass:'',
         newPassConfirm:'',
-        errorPassConfirm:""
+        errorPassConfirm:"",
+        file:'',
+        name:"",
+        errorName:''
+
       }
     },
+  created() {
+    this.getAuthUser();
+  },
   computed: {
     ...mapState('auth', [
       'authUser'
@@ -100,6 +103,13 @@ export default {
           this.resetError();
           this.$router.push({ path:`/${value}`})
         },
+      getAuthUser() {
+        api.getAuthUser().then((res) => {
+          this.updateAuthUser(_.get(res, 'data'))
+          this.name = _.get(res, 'data.name', '')
+          this.avatar = _.get(res, 'data.avatar', '')
+        })
+      },
       handleChangePass(){
         if(this.validatePass()){
           let data ={
@@ -119,6 +129,36 @@ export default {
             })
           })
         }
+      },
+      onchangeFile(e){
+        this.file = e.target.files[0]
+      },
+      handleChangeInfo(){
+        if(this.name.length ===0 || this.name.length < 2 ){
+          this.errorName = "Tên phải lớn hơn hoặc bằng 2 ký tự"
+        }else{
+          let data = new FormData();
+          data.append('name', this.name)
+          if(this.file.length !== 0){
+            data.append('avatar', this.file)
+            console.log(this.file)
+          }
+          api.changInfo(data).then(()=>{
+            this.resetForm()
+            this.resetError()
+            this.getAuthUser()
+            this.$message({
+              type: 'success',
+              message: 'Cập nhật thành công',
+            })
+          }).catch(()=>{
+            this.$message({
+              type: 'error',
+              message: 'Cập nhật thất bại',
+            })
+          })
+        }
+
       },
       validatePass(){
         let error = false;
@@ -148,6 +188,17 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.custom-file-upload {
+  border-radius: 5px;
+  color: #ffffff;
+  background-color: #409EFF;
+  display: inline-block;
+  padding: 0px 12px;
+  cursor: pointer;
+}
+input[type="file"] {
+  display: none;
+}
     .container{
        .infor{
         width: 80%;

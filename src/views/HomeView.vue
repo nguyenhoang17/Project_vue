@@ -25,9 +25,20 @@
                       <div class="list__task__content" v-for="listItem in value.cards" :key="listItem.id">
                       <el-row>
                           <el-col :span="24">
-                            <div class="grid-content bg-purple-dark list__task__content__text" >
-                              <span >{{listItem.name}}</span>
-                              <span class="list__task__content__edit" @click="dialogTableVisible = true"><i class="el-icon-edit"></i></span>
+                            <div class="grid-content bg-purple-dark list__task__content__text" @click="dialogTableVisible = true">
+                              <span>{{listItem.title}}</span>
+                              <span class="list__task__content__edit">
+                                <el-dropdown>
+                                  <span class="el-dropdown-link">
+                                    <i class="el-icon-edit"></i>
+                                  </span>
+                                  <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item><div @click="openDialogUpdateCard(listItem)">Sửa thẻ</div></el-dropdown-item>
+                                    <el-dropdown-item><div @click="handleDeleteCard(listItem.id)">Xoá thẻ</div></el-dropdown-item>
+                                  </el-dropdown-menu>
+                                </el-dropdown>
+
+                              </span>
                             </div>
                           </el-col>
                       </el-row>
@@ -39,9 +50,10 @@
                         type="textarea"
                         :rows="4"
                         placeholder="Nhập tiêu đề cho thẻ này"
-                        v-model="titletask" style="margin-bottom:20px;">
+                        v-model="titletask">
                       </el-input>
-                      <el-button @click="handleAddTitleTask()" type="primary">Thêm thẻ</el-button> <span class="close__add__titleTask" @click="closeAddTitle()"><i class="el-icon-close"></i></span>
+                      <span style="color: #ff0000; display: block; margin-bottom:20px;">{{errorTitletask}}</span>
+                      <el-button @click="handlecreateCard(value.id, value.cards.length)" type="primary">Thêm thẻ</el-button> <span class="close__add__titleTask" @click="closeAddTitle()"><i class="el-icon-close"></i></span>
                     </div>
                       <div v-else class="addTask">
                       <el-row>
@@ -85,19 +97,50 @@
   aaaaaaaaaaaaaaaaa
   </el-dialog>
 
-<!--    <el-dialog title="Shipping address" :visible.sync="dialogProfile">-->
-
-<!--    </el-dialog>-->
+    <el-dialog
+        :title="'Chỉnh sửa thẻ ' + titleCard"
+        :visible.sync="dialogUpdateCard"
+        width="30%"
+        :before-close="handleClose">
+      <el-row>
+        <div class="input-warp" >
+          <label>Tiêu đề
+          </label>
+          <el-input v-model="titleCardUpdate"></el-input>
+          <div v-if="errorTitleCard !== '' " class="error">
+            <span> {{ errorTitleCard }} </span>
+          </div>
+        </div>
+      </el-row>
+      <el-row>
+        <div class="input-warp" >
+          <label>Mô tả
+          </label>
+          <el-input
+              type="textarea"
+              :rows="2"
+              placeholder="Nhập mô tả"
+              v-model="descriptionCard">
+          </el-input>
+        </div>
+      </el-row>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="dialogUpdateCard = false">Huỷ</el-button>
+    <el-button type="primary" @click="handleUpdateCard()">Cập nhật</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import draggable from "vuedraggable";
 import api from "@/api";
+import _ from "lodash";
 export default {
     name: "HomeView",
     data(){
        return{
+         dialogUpdateCard:false,
         dialogEditDerectories: false,
         addList:"",
         errorAddList:'',
@@ -111,129 +154,13 @@ export default {
         updateList:"",
         errorUpdateList:"",
         titletask:'',
-        directories: [{
-                  "id": 1,
-                  "name": "group 1",
-                  "user_id": 110,
-                  "index": 1,
-                  "created_at": "2022-08-03T11:14:27.000000Z",
-                  "updated_at": "2022-08-03T11:14:27.000000Z",
-                  "cards": [{
-                          "id": 822,
-                          "name": "task 1",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 649,
-                          "index": 0,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T11:14:41.000000Z",
-                          "updated_at": "2022-08-03T11:14:43.000000Z",
-                          "labels": []
-                      },
-                      {
-                          "id": 823,
-                          "name": "task 2",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 649,
-                          "index": 1,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T12:22:35.000000Z",
-                          "updated_at": "2022-08-03T12:22:35.000000Z",
-                          "labels": []
-                      },
-                      {
-                          "id": 824,
-                          "name": "task 3",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 649,
-                          "index": 2,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T12:22:37.000000Z",
-                          "updated_at": "2022-08-03T12:22:37.000000Z",
-                          "labels": []
-                      },
-                      {
-                          "id": 825,
-                          "name": "task 4",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 649,
-                          "index": 3,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T12:22:39.000000Z",
-                          "updated_at": "2022-08-03T12:22:39.000000Z",
-                          "labels": []
-                      }
-                  ]
-              },
-              {
-                  "id": 2,
-                  "name": "group 2",
-                  "user_id": 110,
-                  "index": 1,
-                  "created_at": "2022-08-03T11:14:29.000000Z",
-                  "updated_at": "2022-08-03T11:14:29.000000Z",
-                  "cards": [{
-                          "id": 821,
-                          "name": "task 5",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 650,
-                          "index": 0,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T11:14:39.000000Z",
-                          "updated_at": "2022-08-03T11:14:43.000000Z",
-                          "labels": []
-                      },
-                      {
-                          "id": 826,
-                          "name": "task 6 Một cầu thủ bóng đá (bóng đá) sinh ra Arg netine hiện đang chơi cho FC Barcelona, (cùng với Ronaldinho). Nghi ngờ trong tâm trí tôi sẽ là Pele / Maradona tiếp theo.",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 650,
-                          "index": 1,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T12:22:43.000000Z",
-                          "updated_at": "2022-08-03T12:22:43.000000Z",
-                          "labels": []
-                      },
-                      {
-                          "id": 827,
-                          "name": "task 7",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 650,
-                          "index": 2,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T12:22:45.000000Z",
-                          "updated_at": "2022-08-03T12:22:45.000000Z",
-                          "labels": []
-                      },
-                      {
-                          "id": 828,
-                          "name": "task 8",
-                          "description": null,
-                          "status": null,
-                          "directory_id": 650,
-                          "index": 3,
-                          "deadline": null,
-                          "user_id": 110,
-                          "created_at": "2022-08-03T12:22:47.000000Z",
-                          "updated_at": "2022-08-03T12:22:47.000000Z",
-                          "labels": []
-                      }
-                  ]
-              }
-          ],
+        errorTitletask:'',
+        directories: [],
+        titleCard:'',
+         errorTitleCard:"",
+         descriptionCard:'',
+         id_card:'',
+         titleCardUpdate:''
 
        } 
     },
@@ -241,6 +168,96 @@ export default {
       this.getList()
   },
   methods:{
+      //Thẻ
+    handleDeleteCard(id){
+      this.$confirm('Dữ liệu không thể phục hồi, Bạn có muốn biếp tục?', 'Cảnh báo', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Đóng',
+        confirmButtonClass: 'deleteConfirm',
+        type: 'warning'
+      }).then(() => {
+        api.deleteCard(id).then(() => {
+          this.resetForm()
+          this.resetError()
+          this.getList()
+          this.$message({
+            showClose: true,
+            type: 'success',
+            message: 'Xóa thẻ thành công'
+          });
+        }).catch(()=>{
+          this.$message({
+            type: 'error',
+            message: 'Xoá sách thất bại',
+          })
+        })
+      })
+    },
+    handleClose(){
+      this.titleCardUpdate="";
+      this.descriptionCard=""
+    },
+      handlecreateCard(directory_id, index){
+        if(this.titletask.length===0){
+          this.errorTitletask= 'Tên thẻ không được trống'
+        }else{
+          this.showAddTitleTask= 0
+          let data ={
+            title: this.titletask,
+            index: index + 1,
+            directory_id:directory_id
+          }
+          api.createCard(data, directory_id).then(()=>{
+            this.resetForm()
+            this.resetError()
+            this.getList()
+            this.$message({
+              type: 'success',
+              message: 'Thêm  thành công',
+            })
+          }).catch(()=>{
+            this.$message({
+              type: 'error',
+              message: 'Thêm thẻ thất bại',
+            })
+          })
+        }
+
+      },
+    handleUpdateCard(){
+        if(this.titleCardUpdate.length===0){
+          this.errorTitleCard = 'Tiêu đề thẻ không được để trống!'
+        }else {
+          let data ={
+            title: this.titleCardUpdate,
+            description: this.descriptionCard
+          }
+          api.updateCard(data, this.id_card).then(()=>{
+            this.dialogUpdateCard=false
+            this.getList()
+            this.$message({
+              type: 'success',
+              message: 'Cập nhật thẻ thành công',
+            })
+          }).catch(error => {
+            let errors = _.get(error.response, 'data.errors', {});
+            let status = _.get(error, "response.status");
+            if (status === 400) {
+              if (Object.keys(errors).length > 0) {
+                this.errorTitleCard = _.get(errors, 'title[0]', "")
+              }
+            } else {
+              if (Object.keys(errors).length === 0) {
+                this.$message.error({
+                  type: 'error',
+                  message: "Có lỗi xảy ra, vui lòng thử lại sau."
+                })
+              }
+            }
+          })
+        }
+    },
+      //list
       getList(){
         api.getList().then((res)=> {
           this.directories = res.data.data
@@ -336,25 +353,35 @@ export default {
       closeAddTitle(){
         this.showAddTitleTask= 0
       },
-      handleAddTitleTask(){
-        this.showAddTitleTask= 0
-      },
       showAddList(){
         this.showAddListTitle = 1
       },
        closeAddList(){
         this.showAddListTitle = 0
       },
+    openDialogUpdateCard(listItem) {
+      this.dialogUpdateCard= true;
+      this.titleCardUpdate = listItem.title
+      this.id_card = listItem.id
+      this.titleCard = listItem.title
+      if(listItem.description) {
+        this.descriptionCard = listItem.description
+      }
+    },
     resetForm() {
       this.addList ="";
       this.InputTask_id='';
       this.TitleTask_id= '';
       this.updateList="";
       this.titletask="";
+      this.titleCard="";
+      this.titleCardUpdate=""
     },
     resetError(){
         this. errorAddList='';
         this.errorUpdateList="";
+        this.errorTitletask="";
+        this.errorTitleCard=""
     }
   },
     components: {
@@ -517,6 +544,14 @@ export default {
     text-align: left;
     color: red;
   }
-
-  
+  .input-warp {
+    margin-bottom: 10px;
+    text-align: left;
+    label {
+      font-weight: 600;
+      color: #3f6079;;
+      display: block;
+      margin-bottom: 5px;
+    }
+  }
 </style>

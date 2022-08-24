@@ -15,7 +15,7 @@
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item><div @click="openModalProfile()">Thông tin tài khoản</div></el-dropdown-item>
                                 <el-dropdown-item><div @click="redirect('me')">Đổi thông tin tài khoản</div></el-dropdown-item>
-                                <el-dropdown-item divided><div @click.native="handleLogout()">Đăng xuất</div></el-dropdown-item>
+                                <el-dropdown-item divided><div @click="handleLogout()">Đăng xuất</div></el-dropdown-item>
                             </el-dropdown-menu>
                         </el-dropdown>
                     </div>

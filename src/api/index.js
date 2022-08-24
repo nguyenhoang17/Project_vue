@@ -78,6 +78,13 @@ export default {
           data: data
       })
     },
+    changInfo(data){
+      return apiAxios({
+          method:'post',
+          url:'users',
+          data: data
+      })
+    },
 
     //Danh sách
     getList(){
@@ -104,6 +111,27 @@ export default {
         return apiAxios({
             method: 'delete',
             url:'directories/' + id,
+        })
+    },
+    //Thẻ
+    createCard(data){
+      return apiAxios({
+          method: 'post',
+          url: 'cards',
+          data: data
+      })
+    },
+    updateCard(data, id){
+        return apiAxios({
+            method: 'put',
+            url: 'cards/' + id,
+            data: data
+        })
+    },
+    deleteCard(id){
+        return apiAxios({
+            method: 'delete',
+            url: 'cards/' + id,
         })
     }
 }

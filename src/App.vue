@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <AdminLayout v-if="isAuthenticated==true"/>
+    <AdminLayout v-if="isAuthenticated"/>
     <LoginLayout v-else/>
   </div>
 </template>
