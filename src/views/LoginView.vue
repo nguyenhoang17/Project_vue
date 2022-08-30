@@ -71,7 +71,7 @@ export default {
         }).catch((error) => {
            this.$message({
             type: 'error',
-            message: 'Đăng nhập thành công thành công',
+            message: 'Đăng nhập không thành công',
           })
               let errors = _.get(error, 'response.data.error', {})
               if (Object.keys(errors).length > 0) {

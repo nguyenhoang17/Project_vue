@@ -133,5 +133,53 @@ export default {
             method: 'delete',
             url: 'cards/' + id,
         })
-    }
+    },
+    detailCard(id){
+        return apiAxios({
+            method: 'get',
+            url: 'cards/' + id,
+        })
+    },
+    createCheckList(data){
+      return apiAxios({
+          method: 'post',
+          url: 'check-lists',
+          data: data
+      })
+    },
+    updateWork(data, id){
+        return apiAxios({
+            method: 'put',
+            url: 'check-lists/' + id,
+            data: data
+        })
+    },
+    deleteWork(id){
+        return apiAxios({
+            method: 'delete',
+            url: 'check-lists/' + id,
+        })
+    },
+    createWorkChil(data){
+      return apiAxios({
+          method: 'post',
+          url: 'check-list-childs',
+          data:data
+      })
+    },
+    deleteWorkChil(id){
+        return apiAxios({
+            method: 'delete',
+            url: 'check-list-childs/' + id,
+
+        })
+    },
+    updateWorkChil(data, id){
+        return apiAxios({
+            method: 'put',
+            url: 'check-list-childs/' + id,
+            data: data
+        })
+    },
+
 }

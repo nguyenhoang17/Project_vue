@@ -25,7 +25,7 @@
                       <div class="list__task__content" v-for="listItem in value.cards" :key="listItem.id">
                       <el-row>
                           <el-col :span="24">
-                            <div class="grid-content bg-purple-dark list__task__content__text" @click="dialogTableVisible = true">
+                            <div class="grid-content bg-purple-dark list__task__content__text" @click="openModalDetailCard(listItem.id)">
                               <span>{{listItem.title}}</span>
                               <span class="list__task__content__edit">
                                 <el-dropdown>
@@ -33,6 +33,7 @@
                                     <i class="el-icon-edit"></i>
                                   </span>
                                   <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item><div @click="openModalDetailCard(listItem.id)">Xem chi tiết thẻ</div></el-dropdown-item>
                                     <el-dropdown-item><div @click="openDialogUpdateCard(listItem)">Sửa thẻ</div></el-dropdown-item>
                                     <el-dropdown-item><div @click="handleDeleteCard(listItem.id)">Xoá thẻ</div></el-dropdown-item>
                                   </el-dropdown-menu>
@@ -93,10 +94,6 @@
     <el-button type="primary" @click="handleUpdateDirectories()">Cập nhật</el-button>
   </span>
     </el-dialog>
-    <el-dialog title="Shipping address" :visible.sync="dialogTableVisible">
-  aaaaaaaaaaaaaaaaa
-  </el-dialog>
-
     <el-dialog
         :title="'Chỉnh sửa thẻ ' + titleCard"
         :visible.sync="dialogUpdateCard"
@@ -129,6 +126,178 @@
     <el-button type="primary" @click="handleUpdateCard()">Cập nhật</el-button>
   </span>
     </el-dialog>
+    <el-dialog :visible.sync="dialogDetailCard">
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark">
+          <el-row>
+            <el-col :span="1"><div class="grid-content bg-purple"><div class="icon_detail_card icon">
+              <i class="el-icon-bank-card"></i>
+            </div></div></el-col>
+            <el-col :span="23"><div class="grid-content bg-purple-light" style="text-align: left">
+              <div>
+                <h3 v-if="updateTitleCard===false" @click="updateTitleCard=true">{{detailTitleCard}}</h3>
+                <div v-else >
+                  <el-input placeholder="Nhập tiêu đề" v-model="titleCardUpdate" @blur="updateTitleCard=false" @keydown.enter.native="handleUpdateCard(id_card)"></el-input>
+                </div>
+                <p>Trong danh sách "{{directory}}"</p>
+
+              </div>
+            </div></el-col>
+          </el-row>
+
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="18">
+          <el-row>
+            <div class="grid-content bg-purple-light">
+              <el-col :span="1"><div class="grid-content bg-purple">
+                <div class="icon_detail_card icon">
+                  <i class="el-icon-s-operation"></i>
+                </div>
+
+              </div></el-col>
+              <el-col :span="23">
+                <div class="grid-content bg-purple-light icon" style="margin-left: 11px">
+                  <el-row>
+                    <h3>Mô tả</h3>
+                    <div>
+                      <el-input
+                          type="textarea"
+                          :rows="4"
+                          placeholder="Thêm mô tả chi tết hơn..."
+                          v-model="descriptionCard"
+                          @keydown.enter.native="updateDescription(id_card)"
+                      >
+                      </el-input>
+                    </div>
+                  </el-row>
+
+                </div>
+              </el-col>
+            </div>
+          </el-row>
+
+
+          <div class="grid-content bg-purple-light" v-for="itemWork in listWork"  :key="itemWork.id" >
+            <el-row>
+              <el-col :span="1"><div class="grid-content bg-purple">
+                <div class="icon_detail_card icon">
+                  <i class="el-icon-finished"></i>
+                </div>
+
+              </div></el-col>
+              <el-col :span="18">
+                <div class="grid-content bg-purple-light icon" style="margin-left: 11px">
+                  <div v-if="openUpdateWork!==false && work_id === itemWork.id" style="margin-top: 10px">
+                    <el-input placeholder="Nhập công việc" v-model="updateWork" @blur="openUpdateWork=false" @keydown.enter.native="handleupdateWork()"></el-input>
+                    <span>{{errorUpdateWork}}</span>
+                  </div>
+                  <h3 v-else @click="openEditWork(itemWork)">{{itemWork.title}}</h3>
+                  <div>
+                  </div>
+                </div>
+              </el-col>
+              <el-col :span="5">
+                <div class="grid-content bg-purple-light">
+                 <h3>
+                   <span class="icon_delete" @click="handleDeleteWork(itemWork.id)"><i class="el-icon-delete"></i></span>
+                 </h3>
+                </div>
+              </el-col>
+            </el-row>
+
+            <el-row>
+              <div v-for="check_list_child in itemWork.check_list_childs" :key="check_list_child.id">
+                <el-col :span="19">
+                  <div class="grid-content bg-purple-light icon workChildren" style="margin-left: 11px" >
+                    <el-checkbox v-model="checked" style="display: block">
+                      <div v-if="openUpdateWorkChilInput===true && workChil_id === check_list_child.id">
+                        <div >
+                          <el-input @blur="openUpdateWorkChilInput= false" @keydown.enter.native="handleUpdateWorkChill()" placeholder="Nhập tên công việc con" v-model="updateWorkChil"></el-input>
+                        </div>
+                      </div>
+                      <span v-else>{{check_list_child.title}}</span>
+                    </el-checkbox>
+                    <span style="padding-left: 20px" class="error" v-if='openUpdateWorkChilInput===true && workChil_id === check_list_child.id && errorUpdateWorkChill!==""'>{{errorUpdateWorkChill}}</span>
+                  </div>
+                </el-col>
+                <el-col :span="5">
+                  <div class="grid-content bg-purple-light" style="text-align: left">
+                    <el-dropdown trigger="click">
+                      <span class="el-dropdown-link">
+                        <i class="el-icon-more"></i>
+                      </span>
+                      <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item><div @click="openUpdateWorkChil(check_list_child)">Sửa</div></el-dropdown-item>
+                        <el-dropdown-item><div @click="handleDeleteWorkChil(check_list_child.id)">Xoá</div></el-dropdown-item>
+                      </el-dropdown-menu>
+                    </el-dropdown>
+                  </div>
+                </el-col>
+              </div>
+            </el-row>
+            <el-row>
+              <div style="text-align: left" >
+                <el-col :span="1"><div class="grid-content bg-purple">
+                  <div class="icon_detail_card icon">
+                  </div>
+                </div></el-col>
+                <div style="margin-top: 20px">
+                  <el-col :span="19"><div class="grid-content bg-purple">
+                  <div v-if="addWorkChil == true && work_id === itemWork.id">
+                    <el-input placeholder="Nhập công việc con" v-model="workChil" @blur="addWorkChil = false;" @keydown.enter.native="handleAddWorkChil()"></el-input>
+                    <span class="error">{{errorWorkChil}}</span>
+                  </div>
+                    <el-button v-else type="info" plain @click="openAddWorkChil(itemWork.id)">Thêm mục</el-button>
+                  </div></el-col>
+                </div>
+              </div>
+            </el-row>
+
+          </div>
+        </el-col>
+        <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="24"><div class="grid-content bg-purple">
+            <div class="right_container">
+              <p>Thêm vào thẻ</p>
+              <button class="button_add"><span><i class="el-icon-price-tag"></i></span> Nhãn</button>
+              <button class="button_add" @click="openModalAddCheckList()"><span><i class="el-icon-finished"></i></span> Việc cần làm </button>
+              <button class="button_add">
+                <div @click="dialogDeadline=true">
+                  <span><i class="el-icon-time"></i></span> Ngày
+                </div>
+              </button>
+              <button class="button_add"><span><i class="el-icon-paperclip"></i></span> Đính kèm</button>
+            </div>
+
+          </div></el-col>
+        </div></el-col>
+      </el-row>
+    </el-dialog>
+
+    <!--Modal thêm công việc-->
+
+    <el-dialog title="Thêm công việc" :visible.sync="modalCheckList"  width="30%">
+      <el-input placeholder="Nhập công việc" v-model="checkList"></el-input>
+      <span class="error">{{errorCheckList}}</span>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="modalCheckList = false">Huỷ</el-button>
+    <el-button type="primary" @click="handleAddCheckList()">Tạo</el-button>
+  </span>
+    </el-dialog>
+    <!--Modal thêm dealine-->
+    <el-dialog :visible.sync="dialogDeadline" width="20%">
+      <div class="block">
+        <el-date-picker
+            v-model="deadline"
+            type="datetime"
+            placeholder="chọn ngày và giờ hết hạn cho thẻ">
+        </el-date-picker>
+      </div>
+      <span>{{errorDeadline}}</span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -136,16 +305,38 @@
 import draggable from "vuedraggable";
 import api from "@/api";
 import _ from "lodash";
+import moment from "moment";
 export default {
     name: "HomeView",
     data(){
        return{
-         dialogUpdateCard:false,
+         errorDeadline:'',
+         dialogDeadline:false,
+        deadline:'',
+        errorUpdateWorkChill:'',
+        checked:false,
+        openUpdateWorkChilInput:false,
+        workChil_id:'',
+        addWorkChil:false,
+        updateWorkChil:'',
+        workChil:'',
+        errorWorkChil:"",
+        work_id:'',
+        openUpdateWork:false,
+        updateWork:'',
+        errorUpdateWork:'',
+        listWork:[],
+        errorCheckList:'',
+        checkList:'',
+        modalCheckList:false,
+        enableDescription: false,
+        detailTitleCard:'',
+        dialogUpdateCard:false,
         dialogEditDerectories: false,
         addList:"",
         errorAddList:'',
         dialogProfile:false,
-        dialogTableVisible:false,
+         dialogDetailCard:false,
         InputTask_id:'',
         TitleTask_id: '',
         showAddListTitle : 0,
@@ -157,18 +348,223 @@ export default {
         errorTitletask:'',
         directories: [],
         titleCard:'',
-         errorTitleCard:"",
-         descriptionCard:'',
-         id_card:'',
-         titleCardUpdate:''
+        errorTitleCard:"",
+        descriptionCard:'',
+        id_card:'',
+        titleCardUpdate:'',
+        updateTitleCard:false,
+         directory:''
 
        } 
     },
   mounted() {
-      this.getList()
+      this.getList();
+      this.deadline = moment();
   },
   methods:{
-      //Thẻ
+    //Thẻ
+    handleUpdateWorkChill(){
+      if(this.updateWorkChil.length===0){
+        this.errorUpdateWorkChill = "Tiêu đề không được trống!"
+      }else{
+        let data={
+          title: this.updateWorkChil
+        }
+        api.updateWorkChil(data, this.workChil_id).then(()=>{
+          this.openUpdateWorkChilInput=false;
+          this.detailCard(this.id_card)
+          this.resetForm()
+          this.resetError()
+          this.$message({
+            showClose: true,
+            type: 'success',
+            message: 'Cập nhật công việc con thành công'
+          });
+        })
+      }
+    },
+    openUpdateWorkChil(check_list_child){
+      this.errorUpdateWorkChill='';
+      this.openUpdateWorkChilInput=true;
+      this.updateWorkChil = check_list_child.title
+      this.workChil_id  = check_list_child.id
+    },
+    handleDeleteWorkChil(id){
+      this.$confirm('Dữ liệu không thể phục hồi, Bạn có muốn biếp tục?', 'Cảnh báo', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Đóng',
+        confirmButtonClass: 'deleteConfirm',
+        type: 'warning'
+      }).then(() => {
+        api.deleteWorkChil(id).then(() => {
+          this.resetForm()
+          this.resetError()
+          this.detailCard(this.id_card)
+          this.$message({
+            showClose: true,
+            type: 'success',
+            message: 'Xóa công việc thành công'
+          });
+        }).catch(()=>{
+          this.$message({
+            type: 'error',
+            message: 'Xoá công việc thất bại',
+          })
+        })
+      })
+    },
+    handleAddWorkChil(){
+      if(this.workChil.length == 0){
+        this.errorWorkChil = 'Tên công việc con không được trống!'
+      }else{
+        let data ={
+          title: this.workChil,
+          check_list_id: this.work_id
+        }
+        api.createWorkChil(data).then(()=>{
+          this.addWorkChil = false;
+          this.detailCard(this.id_card)
+          this.resetError()
+          this.resetForm()
+          this.$message({
+            showClose: true,
+            type: 'success',
+            message: 'Tạo công việc con thành công'
+          });
+        })
+      }
+    },
+    openAddWorkChil(id){
+      this.addWorkChil = true;
+      this.work_id = id
+
+    },
+    handleDeleteWork(id){
+      this.$confirm('Dữ liệu không thể phục hồi, Bạn có muốn biếp tục?', 'Cảnh báo', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Đóng',
+        confirmButtonClass: 'deleteConfirm',
+        type: 'warning'
+      }).then(() => {
+        api.deleteWork(id).then(() => {
+          this.resetForm()
+          this.resetError()
+          this.detailCard(this.id_card)
+          this.$message({
+            showClose: true,
+            type: 'success',
+            message: 'Xóa công việc thành công'
+          });
+        }).catch(()=>{
+          this.$message({
+            type: 'error',
+            message: 'Xoá công việc thất bại',
+          })
+        })
+      })
+    },
+    handleupdateWork() {
+      let data = {
+        title: this.updateWork,
+      }
+      api.updateWork(data, this.work_id).then(() => {
+        this.detailCard(this.id_card)
+        this.openUpdateWork = false
+        this.$message({
+          showClose: true,
+          type: 'success',
+          message: 'Cập nhật công việc thẻ thành công'
+        });
+      })
+    },
+    openEditWork(itemWork){
+      this.openUpdateWork = true
+      this.work_id = itemWork.id
+      this.updateWork = itemWork.title
+    },
+    handleAddCheckList(){
+      if(this.checkList.length===0){
+        this.errorCheckList= 'Tên công việc không được trống'
+      }else{
+        let data={
+          title: this.checkList,
+          card_id : this.id_card
+        }
+        api.createCheckList(data).then(()=>{
+          this.detailCard(this.id_card)
+          this.resetForm()
+          this.resetError()
+          this.modalCheckList=false
+          this.$message({
+            showClose: true,
+            type: 'success',
+            message: 'Tạo công việc thành công'
+          });
+        }).catch(error => {
+          let errors = _.get(error.response, 'data.errors', {});
+          let status = _.get(error, "response.status");
+          if (status === 400) {
+            if (Object.keys(errors).length > 0) {
+              this.errorCheckList = _.get(errors, 'title[0]', "")
+            }
+          } else {
+            if (Object.keys(errors).length === 0) {
+              this.$message.error({
+                type: 'error',
+                message: "Có lỗi xảy ra, vui lòng thử lại sau."
+              })
+            }
+          }
+        })
+      }
+
+    },
+    openModalAddCheckList(){
+      this.modalCheckList=true
+      this.resetError()
+      this.resetForm()
+    },
+    updateDescription(){
+      let data = {
+        title: this.detailTitleCard,
+        description: this.descriptionCard
+      }
+      api.updateCard(data,this.id_card).then(()=>{
+        this.detailCard(this.id_card)
+        this.enableDescription = false
+        this.$message({
+          showClose: true,
+          type: 'success',
+          message: 'Cập nhật mô tả thẻ thành công'
+        });
+      }).catch(()=>{
+        this.detailCard(this.id_card)
+        this.enableDescription = false
+        this.$message({
+          showClose: true,
+          type: 'error',
+          message: 'Cập nhật mô tả thẻ thất bại'
+        });
+      })
+    },
+    openModalDetailCard(id){
+      this.resetForm()
+      this.resetError()
+      this.dialogDetailCard=true;
+      this.enableDescription = false
+      this.detailCard(id)
+    },
+    detailCard(id){
+      api.detailCard(id).then((res)=>{
+        this.detailTitleCard = _.get(res, 'data.data.title');
+        this.titleCardUpdate =  _.get(res, 'data.data.title');
+        this.directory = _.get(res, 'data.data.directory.title');
+        this.id_card = _.get(res, 'data.data.id');
+        this.descriptionCard = _.get(res, 'data.data.description');
+        this.listWork = _.get(res, 'data.data.check_lists');
+      })
+
+    },
     handleDeleteCard(id){
       this.$confirm('Dữ liệu không thể phục hồi, Bạn có muốn biếp tục?', 'Cảnh báo', {
         confirmButtonText: 'Xóa',
@@ -188,7 +584,7 @@ export default {
         }).catch(()=>{
           this.$message({
             type: 'error',
-            message: 'Xoá sách thất bại',
+            message: 'Xoá thẻ thất bại',
           })
         })
       })
@@ -213,7 +609,7 @@ export default {
             this.getList()
             this.$message({
               type: 'success',
-              message: 'Thêm  thành công',
+              message: 'Thêm thẻ thành công',
             })
           }).catch(()=>{
             this.$message({
@@ -233,8 +629,10 @@ export default {
             description: this.descriptionCard
           }
           api.updateCard(data, this.id_card).then(()=>{
+            this.updateTitleCard=false
             this.dialogUpdateCard=false
             this.getList()
+            this.detailCard(this.id_card)
             this.$message({
               type: 'success',
               message: 'Cập nhật thẻ thành công',
@@ -369,19 +767,32 @@ export default {
       }
     },
     resetForm() {
+      this.workChil ="";
       this.addList ="";
       this.InputTask_id='';
       this.TitleTask_id= '';
       this.updateList="";
       this.titletask="";
       this.titleCard="";
-      this.titleCardUpdate=""
+      this.titleCardUpdate="";
+      this.descriptionCard='';
+      this.titleCardUpdate='';
+      this.checkList='';
+      this.updateWork="";
+      this.workChil="";
+      this.updateWorkChil="";
     },
     resetError(){
+      this.errorDeadline="";
+      this.errorWorkChil="";
+        this.errorUpdateWork='';
+        this.errorCheckList=''
         this. errorAddList='';
         this.errorUpdateList="";
         this.errorTitletask="";
         this.errorTitleCard=""
+        this.errorWorkChil="";
+        this.errorUpdateWorkChill="";
     }
   },
     components: {
@@ -452,7 +863,6 @@ export default {
                         right: 0;
                         width: 30px;
                         height: 30px;
-                        background-color: #ccc;
                         font-size: 14px;
                         text-align: center;
                         margin: 5px 10px 5px 0px;
@@ -552,6 +962,51 @@ export default {
       color: #3f6079;;
       display: block;
       margin-bottom: 5px;
+    }
+  }
+  .icon_detail_card{
+    margin: 10px 0px;
+    font-size: 30px;
+    font-weight: 600;
+  }
+  .icon{
+    text-align: left;
+  }
+  .button_add{
+    width: 100%;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    text-align: left;
+    background-color: #ccc;
+    margin: 5px 0px;
+  }
+  .right_container{
+    padding: 0px 0px 0px 20px;
+    text-align: left;
+  }
+  .icon_edit{
+    color: #67C23A;
+    font-size: 16px;
+    margin:0px 10px;
+    cursor: pointer;
+  }
+  .icon_delete{
+    color: #F56C6C;
+    font-size: 20px;
+    margin:0px 5px;
+    cursor: pointer;
+  }
+  .icon_work_chil{
+    color: #F56C6C;
+    font-size: 17px;
+  }
+  .workChildren{
+    font-size: 20px;
+    margin-bottom: 10px;
+    span{
+      font-size: 16px;
+      margin-left: 3px;
     }
   }
 </style>
