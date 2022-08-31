@@ -181,5 +181,26 @@ export default {
             data: data
         })
     },
+    updateDeadline(data, id){
+        return apiAxios({
+            method: 'put',
+            url: 'cards/' + id + '/change-status-deadline',
+            data: data
+        })
+    },
+    updateStatusChil(data, id){
+        return apiAxios({
+            method: 'put',
+            url: 'check-list-childs/' + id + '/change-status',
+            data: data
+        })
+    },
+    updateStatusCard(data, id){
+        return apiAxios({
+            method: 'put',
+            url: 'cards/' + id + '/change-status',
+            data: data
+        })
+    },
 
 }
