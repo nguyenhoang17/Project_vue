@@ -202,5 +202,78 @@ export default {
             data: data
         })
     },
-
+    addFilesCard(id,data){
+        return apiAxios({
+            method:'post',
+            url: 'cards/'+id+'/upload-file',
+            data: data
+        })
+    },
+    updateNameFile(id,data){
+        return apiAxios({
+            method:'put',
+            url: 'files/' + id,
+            data: data
+        })
+    },
+    deleteFileCard(id){
+      return apiAxios({
+          method:'delete',
+          url: 'files/' + id,
+      })
+    },
+    createAssignTag(id, data){
+      return apiAxios({
+          method:'post',
+          url: 'cards/'+id+'/label',
+          data: data
+      })
+    },
+    getTag(params) {
+        return apiAxios({
+            method: 'get',
+            url: 'labels',
+            params: params
+        })
+    },
+    deleteTag(id) {
+        return apiAxios({
+            method: 'delete',
+            url: 'labels/'+id,
+        })
+    },
+    updateTag(id,data){
+        return apiAxios({
+            method:'put',
+            url: 'labels/' + id,
+            data: data
+        })
+    },
+    moveDirectories(id,index){
+        return apiAxios({
+            method:'PUT',
+            url:'/directories/'+id+'/index?index='+index,
+        })
+    },
+    moveCards(data, id){
+        return apiAxios({
+            method:'PUT',
+            url:'/cards/'+id+'/directory',
+            data:data
+        })
+    },
+    attachTag(id, data){
+      return apiAxios({
+          method: "POST",
+          url:'cards/'+id+'/attach-labels',
+          data:data
+      })
+    },
+    detachTag(id, data){
+        return apiAxios({
+            method: "delete",
+            url:'cards/'+id+'/detach-labels',
+            data:data
+        })
+    }
 }

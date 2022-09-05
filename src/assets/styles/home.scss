@@ -1,0 +1,343 @@
+.home {
+  text-align: left;
+  display: inline-block;
+  padding: 10px;
+  width: 100%;
+  height: 93.8vh;
+  background-image: url(../assets/images/hinh-nen-songoku-7-vien-ngoc-rong-full-hd-4k.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  .container1 {
+    max-width: 1883px;
+    max-height: 91.8vh;
+    height: 91.8vh;
+    overflow: auto;
+    display: inline-flex;
+    text-align: left;
+
+    .container {
+      display: -webkit-inline-box;
+
+      .list {
+        margin-right: 30px;
+        height: max-content;
+        width: 380px;
+        max-height: 900px;
+        overflow: auto;
+        padding: 14px 10px;
+        background-color: #ebecf0;;
+        border-radius: 5px;
+
+        .listTitle {
+          text-align: left !important;
+          margin: 0 !important;
+          padding: 7px 0px 7px 14px;
+
+        }
+
+        .more {
+          width: 33px;
+          height: 33px;
+          line-height: 33px;
+          margin: 0 !important;
+          text-align: center;
+        }
+
+        .more:hover {
+          background-color: #091e4214;
+        }
+
+        .list__task__content {
+          width: 100%;
+          min-height: 60px;
+          background-color: #ffffff;
+          border-radius: 5px;
+          border-bottom: 1px solid #ccc;
+          margin: 15px 0;
+          text-align: left;
+
+          .list__task__content__text {
+            position: relative;
+            padding-left: 14px;
+
+            .list__task__content__edit {
+              position: absolute;
+              top: 0;
+              right: 0;
+              width: 30px;
+              height: 30px;
+              font-size: 14px;
+              text-align: center;
+              margin: 5px 10px 5px 0px;
+              display: none;
+            }
+          }
+
+          .list__task__content__text:hover .list__task__content__edit {
+            display: inline-block;
+          }
+        }
+
+        .addTask {
+          width: 100%;
+          min-height: 60px;
+          line-height: 60px;
+          margin: 10px 0;
+          text-align: left;
+
+          .addTaskText {
+            padding-left: 14px;
+          }
+        }
+
+        .addTask:hover {
+          background-color: #091e4214;
+          border-radius: 5px;
+          border-bottom: 1px solid #ccc;
+
+        }
+
+        .titletask {
+          text-align: left;
+
+          .close__add__titleTask {
+            font-size: 25px;
+          }
+        }
+      }
+    }
+  }
+
+  .container1::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+  }
+
+  .container1::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .container1::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-image: -webkit-gradient(linear,
+            left bottom,
+            left top,
+            color-stop(0.44, rgb(122, 153, 217)),
+            color-stop(0.72, rgb(73, 125, 189)),
+            color-stop(0.86, rgb(28, 58, 148)));
+  }
+
+}
+
+.addListTask {
+  width: 380px;
+  background-color: #ebecf0;
+  opacity: 0.7;
+  height: 70px;
+  line-height: 70px;
+  border-radius: 5px;
+
+  h3 {
+    margin: 0px;
+    padding: 0 10px;
+  }
+}
+
+.formAddList {
+  width: 380px;
+  padding: 5px;
+  background-color: #ffffff;
+  height: max-content;
+  border-radius: 5px;
+
+  input {
+    margin-bottom: 10px;
+  }
+
+  .close__add__List {
+    font-size: 25px;
+  }
+}
+
+.list_group {
+  margin-top: 30px;
+}
+
+.error {
+  text-align: left;
+  color: red;
+}
+
+.input-warp {
+  margin-bottom: 10px;
+  text-align: left;
+
+  label {
+    font-weight: 600;
+    color: #3f6079;;
+    display: block;
+    margin-bottom: 5px;
+  }
+}
+
+.icon_detail_card {
+  margin: 10px 0px;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.icon {
+  text-align: left;
+}
+
+.button_add {
+  width: 100%;
+  height: 35px;
+  border: none;
+  border-radius: 5px;
+  text-align: left;
+  background-color: #dddddd;
+  margin: 5px 0px;
+}
+
+.right_container {
+  padding: 0px 0px 0px 20px;
+  text-align: left;
+}
+
+.icon_edit {
+  color: #67C23A;
+  font-size: 18px;
+  margin: 0px 5px;
+  cursor: pointer;
+}
+
+.icon_delete {
+  color: #F56C6C;
+  font-size: 18px;
+  margin: 0px 5px;
+  cursor: pointer;
+}
+
+.icon_work_chil {
+  color: #F56C6C;
+  font-size: 17px;
+}
+
+.workChildren {
+  margin-left: 32px;
+  font-size: 20px;
+  margin-bottom: 10px;
+
+  span {
+    font-size: 16px;
+    margin-left: 3px;
+  }
+}
+
+.deadline::v-deep {
+  width: 100% !important;
+  border: none;
+
+  .el-input__inner {
+    padding-left: 17px;
+    background-color: #dddddd !important;
+    border: none;
+    width: 100%;
+    height: 33px;
+    color: #000000;
+  }
+
+  .el-input__icon {
+    color: #000000;
+    line-height: 35px;
+    width: 0;
+    margin-left: -7px;
+    margin-right: 15px;
+  }
+}
+
+.container__deadline {
+  text-align: left;
+}
+.btnWorkChild{
+  margin-left: 11px;
+}
+.success{
+  color: #ffffff;
+  background-color: #67C23A;
+  margin-left: 10px;
+}
+.lastDeadline{
+  color: #ffffff;
+  background-color: #ff0000;
+  margin-left: 10px;
+}
+.listFile{
+  width: 100%;
+  display: flex;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  height: max-content;
+}
+.listFile:hover{
+  background-color: #f4f4f4;
+}
+.fileInfo{
+  padding: 0px 20px;
+}
+.actionFile{
+  text-decoration: underline;
+  cursor: pointer;
+}
+.actionFile:hover{
+  color: #409EFF;
+}
+.colorTag::v-deep{
+  .el-color-picker__trigger{
+    width: 343px !important;
+  }
+}
+.listTag{
+  text-align: center;
+  height: 35px;
+  line-height: 35px;
+  color: #ffffff;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.listTagContainer{
+  height: 35px;
+  line-height: 35px;
+}
+.listCard{
+  display: flex;
+}
+.itemCard{
+  padding: 6px;
+  color: #ffffff;
+  border-radius: 5px;
+}
+.tagContainer{
+  margin-right: 5px;
+}
+.itemTagContainer{
+  display: inline-block;
+  margin-top: 5px;
+}
+.itemTag{
+  display: inline-block;
+  width: 50px;
+  height: 10px;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+.infoDeadline{
+  font-size: 13px;
+}
+.not-img{
+  width: 100px;
+  border: 1px solid #ddd;
+  height: 100px;
+}

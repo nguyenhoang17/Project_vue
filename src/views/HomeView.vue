@@ -1,8 +1,8 @@
 <template>
   <div class="home">
     <div class="container1">
-      <draggable class="container">
-        <div v-for="(value, index) in directories" :key="index" class="list">
+      <draggable class="container" :list="directories" :move="moveDirectory">
+        <div v-for="(value, index) in directories" :key="index" class="list" >
           <el-row>
             <el-col :span="21">
               <div class="grid-content bg-purple">
@@ -28,13 +28,22 @@
             </el-col>
           </el-row>
           <!--thẻ-->
-          <draggable class="list_group" :directories="value.cards" group="people">
-            <div class="list__task__content" v-for="listItem in value.cards" :key="listItem.index">
-              <el-row>
-                <el-col :span="24">
-                  <div class="grid-content bg-purple-dark list__task__content__text"
-                       @click="openModalDetailCard(listItem.id)">
-                      <h3>{{ listItem.title }}</h3>
+          <div :id="value.id">
+            <draggable class="list_group" :directories="value.cards" group="people" :list="value.cards" :move="moveCard">
+              <div class="list__task__content" v-for="listItem in value.cards" :key="listItem.index"  >
+                <el-row>
+                  <el-col :span="24">
+                    <div class="grid-content bg-purple-dark list__task__content__text"
+                         @click="openModalDetailCard(listItem.id)">
+                      <el-row>
+                        <el-col :span="24">
+                          <div class="grid-content bg-purple-dark itemTagContainer"
+                               v-for="itemTag in listItem.labels" :key="itemTag.id">
+                            <div class="itemTag" :style="{'background-color':itemTag.color}"></div>
+                          </div>
+                        </el-col>
+                      </el-row>
+                      <h3 style="margin: 5px 0px">{{ listItem.title }}</h3>
                       <span class="list__task__content__edit">
                       <el-dropdown>
                         <span class="el-dropdown-link">
@@ -50,7 +59,7 @@
                         </el-dropdown-menu>
                       </el-dropdown>
                     </span>
-                    <p>
+                      <p class="infoDeadline">
                       <span>
                          <i class="el-icon-time">
                            <span v-if="listItem.deadline">
@@ -59,14 +68,18 @@
                            <span v-else> Đang cập nhật</span>
                          </i>
                       </span>
-                     <span></span>
-                    </p>
-                  </div>
+                        <span>
+                       <span></span>
+                     </span>
+                      </p>
+                    </div>
 
-                </el-col>
-              </el-row>
-            </div>
-          </draggable>
+                  </el-col>
+                </el-row>
+              </div>
+            </draggable>
+          </div>
+
           <div>
             <div class="titletask" v-if="showAddTitleTask===1 && TitleTask_id === value.id">
               <el-input
@@ -163,7 +176,7 @@
               <el-col :span="1">
                 <div class="grid-content bg-purple">
                   <div class="icon_detail_card icon">
-                    <i class="el-icon-bank-card"></i>
+                    <i class="el-icon-postcard"></i>
                   </div>
                 </div>
               </el-col>
@@ -187,6 +200,28 @@
       </el-row>
       <el-row>
         <el-col :span="18">
+          <el-row v-if="listTagCard.length!==0">
+            <el-col :span="1">
+              <div class="grid-content bg-purple">
+                <p></p>
+              </div>
+            </el-col>
+            <el-col :span="23">
+              <div class="grid-content bg-purple " style="margin-left: 11px">
+                <div class="container__deadline">
+                  <p><b>Nhãn: </b></p>
+                  <div class="listCard">
+                    <div v-for="tagCard in listTagCard" :key="tagCard.id" class="tagContainer">
+                      <div class="itemCard"
+                           :style="{'background-color':tagCard.color}" @click="actionTag(tagCard)">{{tagCard.name}}</div>
+                    </div>
+                    <el-button type="info" plain icon="el-icon-plus" size="mini" @click="openSelectTag()"></el-button>
+                  </div>
+                </div>
+              </div>
+            </el-col>
+
+          </el-row>
           <el-row>
             <el-col :span="1">
               <div class="grid-content bg-purple">
@@ -200,7 +235,8 @@
                   <el-checkbox @change="updateStatusCard(id_card)" v-model="statusCard">
                     {{ deadline_dt }}
                   </el-checkbox>
-                  <span v-if="statusCard ===true " class="success">Đã hoàn thành</span><span v-else class="lastDeadline">Quá hạn</span>
+                  <span v-if="statusCard ===true " class="success">Đã hoàn thành</span>
+                  <span v-if="checkDeadline === true && statusCard !== true" class="lastDeadline">Quá hạn</span>
                 </div>
               </div>
             </el-col>
@@ -211,7 +247,7 @@
               <el-col :span="1">
                 <div class="grid-content bg-purple">
                   <div class="icon_detail_card icon">
-                    <i class="el-icon-s-operation"></i>
+                    <i class="el-icon-tickets"></i>
                   </div>
 
                 </div>
@@ -236,12 +272,54 @@
               </el-col>
             </div>
           </el-row>
+          <el-row v-if="this.fileList.length !== 0">
+            <el-col :span="1">
+              <div class="grid-content bg-purple">
+                <div class="icon_detail_card icon">
+                  <i class="el-icon-paperclip"></i>
+                </div>
+
+              </div>
+            </el-col>
+            <el-col :span="23">
+              <div class="grid-content bg-purple-light icon" style="margin-left: 11px">
+                <el-row>
+                  <h3>Các tệp tin đính kèm</h3>
+                  <div v-for="file in fileList" :key="file.id" class="listFile">
+                    <div class="imageFile">
+                      <img v-if="file.path.includes('.jpg') ||
+                      file.path.includes('.png') ||
+                      file.path.includes('.jpeg')"
+                           width="100px"
+                           height="100px"
+                           :src="'http://vuecourse.zent.edu.vn/storage/'+ file.path" alt="">
+                      <div class="img-file not-img" v-else-if="file.path.includes('.xlsx') ||
+                      file.path.includes('.docx') || file.path.includes('.doc') ||
+                      file.path.includes('.txt') || file.path.includes('.doc') ||
+                      file.path.includes('.xls') || file.path.includes('.pdf') ||
+                      file.path.includes('.video/mp4')">
+                        {{ file.path.slice(file.path.indexOf('.')) }}
+                      </div>
+                    </div>
+                    <div class="fileInfo">
+                      <p><b>{{file.name}}</b></p>
+                      <p>Đã thêm vào lúc {{formatDateFile(file.created_at)}} -
+                        <span class="actionFile" @click="openModalUpdateNameFile(file)">Chỉnh sửa</span>
+                        - <span class="actionFile" @click="handleDeleteFileCard(file.id)">Xoá</span></p>
+                    </div>
+                  </div>
+
+                </el-row>
+
+              </div>
+            </el-col>
+          </el-row>
           <div class="grid-content bg-purple-light" v-for="itemWork in listWork" :key="itemWork.id">
             <el-row>
               <el-col :span="1">
                 <div class="grid-content bg-purple">
                   <div class="icon_detail_card icon">
-                    <i class="el-icon-finished"></i>
+                    <i class="el-icon-suitcase"></i>
                   </div>
 
                 </div>
@@ -267,6 +345,9 @@
                 </div>
               </el-col>
             </el-row>
+<!--            <el-row>-->
+<!--              <el-progress :percentage="percenTage"></el-progress>-->
+<!--            </el-row>-->
 
             <el-row>
               <div v-for="check_list_child in itemWork.check_list_childs" :key="check_list_child.id">
@@ -283,11 +364,15 @@
                        <span @click="updateStatusWorkChil(check_list_child)">
                          <i :style="{color: success}" v-if="check_list_child.status === 1" class="el-icon-success"></i>
                          <i v-else class="el-icon-question"></i>
-                         <span v-if="check_list_child.status === 1" :style="{color: success}">{{ check_list_child.title }}</span><span v-else>{{ check_list_child.title }}</span>
+                         <span v-if="check_list_child.status === 1"
+                               :style="{color: success}">{{ check_list_child.title }}</span>
+                         <span v-else>{{ check_list_child.title }}</span>
                        </span>
                     </span>
                     <span style="padding-left: 20px" class="error"
-                          v-if='openUpdateWorkChilInput===true && workChil_id === check_list_child.id && errorUpdateWorkChill!==""'>{{ errorUpdateWorkChill }}</span>
+                          v-if='openUpdateWorkChilInput===true && workChil_id === check_list_child.id && errorUpdateWorkChill!==""'>
+                      {{ errorUpdateWorkChill }}
+                    </span>
                   </div>
                 </el-col>
                 <el-col :span="5">
@@ -325,7 +410,8 @@
                                   @keydown.enter.native="handleAddWorkChil()"></el-input>
                         <span class="error">{{ errorWorkChil }}</span>
                       </div>
-                      <el-button class="btnWorkChild" v-else type="info" plain @click="openAddWorkChil(itemWork.id)">Thêm mục</el-button>
+                      <el-button class="btnWorkChild" v-else type="info" plain
+                                 @click="openAddWorkChil(itemWork.id)">Thêm mục</el-button>
                     </div>
                   </el-col>
                 </div>
@@ -340,7 +426,8 @@
               <div class="grid-content bg-purple">
                 <div class="right_container">
                   <p>Thêm vào thẻ</p>
-                  <button class="button_add"><span><i class="el-icon-price-tag"></i></span> Nhãn</button>
+                  <button class="button_add" @click="openSelectTag()">
+                    <span><i class="el-icon-price-tag"></i></span> Nhãn</button>
                   <button class="button_add" @click="openModalAddCheckList()"><span><i
                       class="el-icon-finished"></i></span> Việc cần làm
                   </button>
@@ -360,7 +447,15 @@
                       </el-date-picker>
                     </div>
                   </button>
-                  <button class="button_add"><span><i class="el-icon-paperclip"></i></span> Đính kèm</button>
+                  <button class="button_add"  @click="clickUploadFile">
+                    <span>
+                      <i class="el-icon-paperclip"></i>
+                    </span>
+                    Đính kèm
+                  </button>
+                  <input name="fileImport" ref="file" type="file" id="inputUploadFile"
+                         style="visibility: hidden; height: 0; display: none"
+                         class="" @change="onChangeFile"/>
                 </div>
 
               </div>
@@ -380,6 +475,135 @@
     <el-button type="primary" @click="handleAddCheckList()">Tạo</el-button>
   </span>
     </el-dialog>
+    <!--Modal sửa tên file-->
+
+    <el-dialog title="Sửa tên file" :visible.sync="modalUpdateNameFile" width="30%">
+      <el-input placeholder="Nhập tên file" v-model="updateNameFile"></el-input>
+      <span class="error">{{errorNameFile}}</span>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="modalUpdateNameFile = false">Huỷ</el-button>
+    <el-button type="primary" @click="handleUpdateFileName()">Lưu</el-button>
+  </span>
+    </el-dialog>
+
+    <!--Danh sách nhãn và chọn nhãn-->
+    <el-dialog
+        title="Nhãn"
+        :visible.sync="dialogSelectTag"
+        width="20%">
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark">
+          <el-input placeholder="Nhập tên tag để tìm kiếm"
+                    v-model="searchTag"
+                    @clear="handleClear"
+                    @keydown.enter.native="handleSearch"
+                    clearable>
+          </el-input>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark" style="text-align: left">
+         <p><b>Nhãn</b></p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark"
+        v-for="tag in tags" :key="tag.id">
+          <el-row>
+            <div class="listTagContainer" >
+              <el-col :span="20"><div class="grid-content bg-purple-light listTag"
+                                      :style="{'background-color': tag.color}"
+                                      @click="actionTag(tag)">
+                <span style="float: left; margin-left: 10px"
+                      v-if="tag.checkTag === true"><i class="el-icon-check"></i></span>{{tag.name}}</div></el-col>
+              <el-col :span="4">
+                <div class="grid-content bg-purple" style="text-align: right">
+                  <span class="icon_edit"
+                        @click="openDialogUpdateTag(tag)">
+                    <i class="el-icon-edit-outline"></i>
+                  </span>
+                  <span class="icon_delete"
+                        @click="handleDeleteTag(tag.id)">
+                    <i class="el-icon-delete"></i>
+                  </span>
+                </div>
+              </el-col>
+            </div>
+
+          </el-row>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark">
+          <el-button @click="openDialogAddTag()">Tạo nhãn mới</el-button>
+        </div></el-col>
+      </el-row>
+    </el-dialog>
+    <!--Tạo nhãn mới-->
+    <el-dialog
+        title="Tạo nhãn mới"
+        :visible.sync="dialogAddTag"
+        width="20%">
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark" style="text-align: left">
+          <p><b>Tiêu đề</b></p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark ">
+          <el-input placeholder="Nhập tiêu đề" v-model="contentTag"></el-input>
+          <p class="error">{{ errorContentTag}}</p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark" style="text-align: left">
+          <p><b>Chọn màu</b></p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark colorTag">
+          <el-color-picker v-model="colorTag"></el-color-picker>
+          <p class="error">{{errorColorTag}}</p>
+        </div></el-col>
+      </el-row>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="closeDialogAddTag()">Huỷ</el-button>
+    <el-button type="primary" @click="handleAddAssignTag()">Tạo</el-button>
+  </span>
+    </el-dialog>
+
+    <!--Cập nhật nhãn-->
+    <el-dialog
+        title="Chỉnh sửa nhãn"
+        :visible.sync="dialogUpdateTag"
+        width="20%">
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark" style="text-align: left">
+          <p><b>Tiêu đề</b></p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark ">
+          <el-input placeholder="Nhập tiêu đề" v-model="contentTag"></el-input>
+          <p class="error">{{ errorContentTag}}</p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark" style="text-align: left">
+          <p><b>Chọn màu</b></p>
+        </div></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24"><div class="grid-content bg-purple-dark colorTag">
+          <el-color-picker v-model="colorTag"></el-color-picker>
+          <p class="error">{{errorColorTag}}</p>
+        </div></el-col>
+      </el-row>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="closeDialogUpdateTag()">Huỷ</el-button>
+    <el-button type="primary" @click="handleUpdateTag()">Cập nhật</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -393,6 +617,26 @@ export default {
   name: "HomeView",
   data() {
     return {
+      checkDeadline:false,
+      listTagCard:[],
+      id_tag:'',
+      dialogUpdateTag:false,
+      tags:[],
+      tagName:'',
+      tagColor:'',
+      cardItem:'',
+      contentTag:'',
+      errorContentTag:'',
+      colorTag:'',
+      errorColorTag:'',
+      dialogAddTag:false,
+      searchTag:"",
+      dialogSelectTag:false,
+      id_file:"",
+      modalUpdateNameFile:false,
+      errorNameFile:"",
+      updateNameFile:'',
+      fileList:[],
       success: "#67C23A",
       checkTrue:true,
       statusCard: false,
@@ -441,8 +685,8 @@ export default {
       id_card: '',
       titleCardUpdate: '',
       updateTitleCard: false,
-      directory: ''
-
+      directory: '',
+      percenTage:0,
     }
   },
   mounted() {
@@ -451,6 +695,307 @@ export default {
   },
   methods: {
     //Thẻ
+    // handleProgressBar(id){
+    //   let complete = 0;
+    //   let target = 0;
+    //   api.detailCard(id)
+    //       .then((res) => {
+    //         res.data.data.check_lists[this.index].check_list_childs.forEach(
+    //             (li) => {
+    //               if (li.status == 1) {
+    //                 complete += 1;
+    //               }
+    //               target += 1;
+    //               this.percenTage = Math.ceil((complete / target) * 100);
+    //             }
+    //         );
+    //       })
+    //       .catch((err) => {
+    //         console.log(err);
+    //       });
+    // },
+    actionTag(tag){
+      if(tag.checkTag === false){
+        let data = {
+          label_id : tag.id
+        }
+        api.attachTag(this.id_card, data).then(()=>{
+          this.$message({
+            type: 'success',
+            message: 'Gán nhãn thành công'
+          })
+          this.getTag()
+        })
+      }
+      if(tag.checkTag !== false){
+        let data = {
+          label_id : tag.id
+        }
+        api.detachTag(this.id_card, data).then(()=>{
+          this.$message({
+            type: 'success',
+            message: 'Gỡ nhãn thành công'
+          })
+          this.getTag()
+        })
+      }
+      this.getTag()
+      this.detailCard(this.id_card)
+      this.getList()
+
+    },
+    moveCard(item) {
+      console.log(item)
+      let cardId = item.draggedContext.element.id
+      let index = item.draggedContext.futureIndex
+      let directoryId = item.to.parentElement.getAttribute('id')
+      api.moveCards({
+        index : index,
+        directory_id : directoryId
+      }, cardId).then(()=>{
+
+      })
+    },
+    moveDirectory(item) {
+      api.moveDirectories(item.draggedContext.element.id, item.draggedContext.futureIndex).then(() => {
+      })
+    },
+    formatDateFile(datetime){
+      if(datetime){
+        return moment(datetime).format('YYYY-MM-DD H:mm:ss')
+      }
+    },
+    closeDialogAddTag(){
+      this.dialogAddTag = false
+      this.resetError()
+      this.resetForm()
+    },
+    closeDialogUpdateTag(){
+      this.dialogUpdateTag = false
+      this.resetError()
+      this.resetForm()
+    },
+    handleUpdateTag(){
+      if(!this.contentTag){
+        this.errorContentTag = "Tên nhãn không được trống"
+      }
+      if(!this.colorTag){
+        this.errorColorTag = "Màu nhãn không được trống"
+      }
+      if(this.contentTag.length !== 0 && this.colorTag.length !== 0){
+        let data = {
+          name: this.contentTag,
+          color: this.colorTag
+        }
+        api.updateTag(this.id_tag, data).then(()=>{
+          this.dialogSelectTag = true
+          this.dialogUpdateTag= false
+          this.detailCard(this.id_card)
+          this.getTag()
+          this.getList()
+          this.resetError()
+          this.resetForm()
+          this.$message({
+            type: 'success',
+            message: 'Chnh sửa nhãn thành công'
+          })
+        }).catch(()=>{
+          this.$message({
+            type: 'error',
+            message: 'Chnh sửa nhãn thất bại'
+          })
+          this.dialogSelectTag = true
+          this.dialogUpdateTag= false
+          this.detailCard(this.id_card)
+          this.getTag()
+          this.getList()
+          this.resetError()
+          this.resetForm()
+        })
+      }
+    },
+    openDialogUpdateTag(tag){
+      this.dialogSelectTag = false
+      this.dialogUpdateTag= true
+      this.id_tag = tag.id
+      this.contentTag = tag.name
+      this.colorTag = tag.color
+    },
+    handleDeleteTag(id){
+      this.$confirm('Dữ liệu không thể phục hồi, Bạn có muốn biếp tục?', 'Cảnh báo', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Đóng',
+        confirmButtonClass: 'deleteConfirm',
+        type: 'warning'
+      }).then(() => {
+        api.deleteTag(id).then(()=>{
+          this.$message({
+            type: 'success',
+            message: 'Xoá nhãn thành công'
+          })
+          this.getTag()
+          this.detailCard(this.id_card)
+          this.getList()
+        }).catch(() => {
+          this.$message({
+            type: 'error',
+            message: 'Xoá nhãn thất bại',
+          })
+        })
+      })
+    },
+    handleClear(){
+      this.searchKey ='';
+      this.getTag();
+    },
+    handleSearch(){
+      let payload = {
+        q: this.searchTag
+      }
+      this.getTag(payload)
+    },
+    getTag(params = {}){
+      api.getTag(params).then((res) => {
+        this.tags = _.get(res, 'data.data')
+        this.detailCard(this.id_card)
+        let data = [];
+        this.tags.forEach(value => {
+          data.push({
+            name: value.name,
+            color: value.color,
+            id: value.id,
+            checkTag: false
+          })
+        })
+        this.listTagCard.forEach(value => {
+          data.forEach(val => {
+            if (value.id === val.id){
+              val.checkTag = true;
+            }
+          })
+        })
+        this.tags = data;
+      })
+    },
+    handleAddAssignTag(){
+      if(!this.contentTag){
+        this.errorContentTag = "Tên nhãn không được trống"
+      }
+      if(!this.colorTag){
+        this.errorColorTag = "Màu nhãn không được trống"
+      }
+      if(this.contentTag.length !== 0 && this.colorTag.length !== 0){
+        let data = {
+          name: this.contentTag,
+          color: this.colorTag
+        }
+       api.createAssignTag(this.id_card, data).then(()=>{
+         this.$message({
+           type: 'success',
+           message: 'Tạo và gán nhãn thành công'
+         })
+         this.dialogSelectTag = true
+         this.dialogAddTag= false
+         this.getTag()
+         this.getList()
+         this.detailCard(this.id_card)
+         this.resetError()
+         this.resetForm()
+       }).catch(()=>{
+         this.$message({
+           type: 'success',
+           message: 'Chnh sửa nhãn không thành công'
+         })
+         this.dialogSelectTag = true
+         this.dialogAddTag= false
+         this.detailCard(this.id_card)
+         this.getTag()
+         this.getList()
+         this.resetError()
+         this.resetForm()
+       })
+      }
+      this.getTag()
+    },
+    openDialogAddTag() {
+      this.dialogSelectTag = false
+      this.dialogAddTag= true
+    },
+    openSelectTag() {
+      this.dialogSelectTag = true
+      this.getTag()
+    },
+    handleDeleteFileCard(id){
+      this.$confirm('Dữ liệu không thể phục hồi, Bạn có muốn biếp tục?', 'Cảnh báo', {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Đóng',
+        confirmButtonClass: 'deleteConfirm',
+        type: 'warning'
+      }).then(() => {
+        api.deleteFileCard(id).then(()=>{
+          this.$message({
+            type: 'success',
+            message: 'Xoá file lên thành công'
+          })
+          this.detailCard(this.id_card)
+        }).catch(() => {
+          this.$message({
+            type: 'error',
+            message: 'Xoá file thất bại',
+          })
+        })
+      })
+    },
+    handleUpdateFileName(){
+      if(this.updateNameFile.length ===0){
+        this.errorNameFile = 'Tên file không được để trống'
+      }else{
+        let data= {
+          name : this.updateNameFile
+        }
+        api.updateNameFile(this.id_file, data).then(()=>{
+          this.$message({
+            type: 'success',
+            message: 'Sửa tên file lên thành công'
+          })
+          this.modalUpdateNameFile=false
+          this.detailCard(this.id_card)
+        }).catch(()=>{
+          this.$message({
+            type: 'error',
+            message: 'Sửa tên file không thành công. Xem lại định dạng file!'
+          })
+        })
+        this.detailCard(this.id_card)
+      }
+    },
+    openModalUpdateNameFile(file){
+      this.modalUpdateNameFile=true
+      this.id_file = file.id
+      this.updateNameFile = file.name
+    },
+    onChangeFile() {
+      this.fileImport = this.$refs.file.files[0];
+      const data = new FormData();
+      data.append('file', this.fileImport);
+      api.addFilesCard(this.id_card, data).then(() => {
+        this.$message({
+          type: 'success',
+          message: 'Tải file lên thành công'
+        })
+        this.detailCard(this.id_card)
+      }).catch(()=>{
+        this.$message({
+          type: 'error',
+          message: 'Tải file lên không thành công. Xem lại định dạng file!'
+        })
+      })
+      this.detailCard(this.id_card)
+    },
+    clickUploadFile(){
+      this.$refs.file.value = null;
+      document.getElementById('inputUploadFile').click();
+    },
     updateStatusCard() {
 
       let data = {
@@ -695,6 +1240,7 @@ export default {
       })
     },
     openModalDetailCard(id) {
+      this.checkDeadline = false
       this.resetForm()
       this.resetError()
       this.dialogDetailCard = true;
@@ -711,15 +1257,15 @@ export default {
         this.descriptionCard = _.get(res, 'data.data.description');
         this.listWork = _.get(res, 'data.data.check_lists');
         this.deadline_dt = _.get(res, 'data.data.deadline') ? _.get(res, 'data.data.deadline') : "Đang cập nhật";
-        Object.entries(this.listWork).forEach(([key, value]) => {
-          let check_list_childs={
-            key: key,
-            value : value.check_list_childs
+        this.fileList = _.get(res, 'data.data.files');
+        this.listTagCard =_.get(res, 'data.data.labels')
+        if(_.get(res, 'data.data.deadline')){
+          if(moment(_.get(res, 'data.data.deadline')).format('X') < moment().format('X')){
+            this.checkDeadline = true
+            console.log( this.checkDeadline )
           }
-          Object.entries(check_list_childs.value).forEach(([key, value]) => {
-            console.log(key, value)
-          })
-        })
+        }
+        // this.handleProgressBar(this.id_card)
       })
 
     },
@@ -925,6 +1471,10 @@ export default {
       }
     },
     resetForm() {
+      this.searchTag ="";
+      this.colorTag="";
+      this.contentTag = '';
+      this.updateNameFile="";
       this.workChil = "";
       this.addList = "";
       this.InputTask_id = '';
@@ -941,6 +1491,9 @@ export default {
       this.updateWorkChil = "";
     },
     resetError() {
+      this.errorContentTag ="";
+      this.errorColorTag='';
+      this.errorNameFile = '';
       this.errorDeadline = "";
       this.errorWorkChil = "";
       this.errorUpdateWork = '';
@@ -956,284 +1509,49 @@ export default {
   components: {
     draggable
   },
+  watch:{
+    colorTag(){
+      this.errorColorTag = ""
+    },
+    contentTag(){
+      this.errorContentTag =""
+    },
+    updateNameFile(){
+      this.errorNameFile = ""
+    },
+    workChil(){
+      this.errorWorkChil=""
+    },
+    addList(){
+      this.errorAddList =""
+    },
+    updateList(){
+      this.errorUpdateList = ""
+    },
+    titletask(){
+      this.errorTitletask =""
+    },
+    titleCard(){
+      this.errorTitleCard=""
+    },
+    titleCardUpdate(){
+      this.errorTitleCard=""
+    },
+    checkList(){
+      this.errorCheckList =""
+    },
+    updateWork(){
+      this.errorUpdateWork=""
+    },
+    updateWorkChil(){
+      this.errorUpdateWorkChill=""
+    }
+
+
+  }
 
 }
 </script>
 <style lang="scss" scoped>
-
-.home {
-  display: inline-block;
-  padding: 10px;
-  width: 100%;
-  height: 93.8vh;
-  background-image: url(../assets/images/hinh-nen-songoku-7-vien-ngoc-rong-full-hd-4k.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-
-  .container1 {
-    max-width: 1883px;
-    max-height: 91.8vh;
-    height: 91.8vh;
-    overflow: auto;
-    display: inline-flex;
-    text-align: left;
-
-    .container {
-      display: -webkit-inline-box;
-
-      .list {
-        margin-right: 30px;
-        height: max-content;
-        width: 380px;
-        max-height: 900px;
-        overflow: auto;
-        padding: 14px 10px;
-        background-color: #ebecf0;;
-        border-radius: 5px;
-
-        .listTitle {
-          text-align: left !important;
-          margin: 0 !important;
-          padding: 7px 0px 7px 14px;
-
-        }
-
-        .more {
-          width: 33px;
-          height: 33px;
-          line-height: 33px;
-          margin: 0 !important;
-          text-align: center;
-        }
-
-        .more:hover {
-          background-color: #091e4214;
-        }
-
-        .list__task__content {
-          width: 100%;
-          min-height: 60px;
-          background-color: #ffffff;
-          border-radius: 5px;
-          border-bottom: 1px solid #ccc;
-          margin: 15px 0;
-          text-align: left;
-
-          .list__task__content__text {
-            position: relative;
-            padding-left: 14px;
-
-            .list__task__content__edit {
-              position: absolute;
-              top: 0;
-              right: 0;
-              width: 30px;
-              height: 30px;
-              font-size: 14px;
-              text-align: center;
-              margin: 5px 10px 5px 0px;
-              display: none;
-            }
-          }
-
-          .list__task__content__text:hover .list__task__content__edit {
-            display: inline-block;
-          }
-        }
-
-        .addTask {
-          width: 100%;
-          min-height: 60px;
-          line-height: 60px;
-          margin: 10px 0;
-          text-align: left;
-
-          .addTaskText {
-            padding-left: 14px;
-          }
-        }
-
-        .addTask:hover {
-          background-color: #091e4214;
-          border-radius: 5px;
-          border-bottom: 1px solid #ccc;
-
-        }
-
-        .titletask {
-          text-align: left;
-
-          .close__add__titleTask {
-            font-size: 25px;
-          }
-        }
-      }
-    }
-  }
-
-  .container1::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-  }
-
-  .container1::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  .container1::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background-image: -webkit-gradient(linear,
-        left bottom,
-        left top,
-        color-stop(0.44, rgb(122, 153, 217)),
-        color-stop(0.72, rgb(73, 125, 189)),
-        color-stop(0.86, rgb(28, 58, 148)));
-  }
-
-}
-
-.addListTask {
-  width: 380px;
-  background-color: #ebecf0;
-  opacity: 0.7;
-  height: 70px;
-  line-height: 70px;
-  border-radius: 5px;
-
-  h3 {
-    margin: 0px;
-    padding: 0 10px;
-  }
-}
-
-.formAddList {
-  width: 380px;
-  padding: 5px;
-  background-color: #ffffff;
-  height: max-content;
-  border-radius: 5px;
-
-  input {
-    margin-bottom: 10px;
-  }
-
-  .close__add__List {
-    font-size: 25px;
-  }
-}
-
-.list_group {
-  margin-top: 30px;
-}
-
-.error {
-  text-align: left;
-  color: red;
-}
-
-.input-warp {
-  margin-bottom: 10px;
-  text-align: left;
-
-  label {
-    font-weight: 600;
-    color: #3f6079;;
-    display: block;
-    margin-bottom: 5px;
-  }
-}
-
-.icon_detail_card {
-  margin: 10px 0px;
-  font-size: 30px;
-  font-weight: 600;
-}
-
-.icon {
-  text-align: left;
-}
-
-.button_add {
-  width: 100%;
-  height: 35px;
-  border: none;
-  border-radius: 5px;
-  text-align: left;
-  background-color: #dddddd;
-  margin: 5px 0px;
-}
-
-.right_container {
-  padding: 0px 0px 0px 20px;
-  text-align: left;
-}
-
-.icon_edit {
-  color: #67C23A;
-  font-size: 16px;
-  margin: 0px 10px;
-  cursor: pointer;
-}
-
-.icon_delete {
-  color: #F56C6C;
-  font-size: 20px;
-  margin: 0px 5px;
-  cursor: pointer;
-}
-
-.icon_work_chil {
-  color: #F56C6C;
-  font-size: 17px;
-}
-
-.workChildren {
-  margin-left: 32px;
-  font-size: 20px;
-  margin-bottom: 10px;
-
-  span {
-    font-size: 16px;
-    margin-left: 3px;
-  }
-}
-
-.deadline::v-deep {
-  width: 100% !important;
-  border: none;
-
-  .el-input__inner {
-    padding-left: 17px;
-    background-color: #dddddd !important;
-    border: none;
-    width: 100%;
-    height: 33px;
-    color: #000000;
-  }
-
-  .el-input__icon {
-    color: #000000;
-    line-height: 35px;
-    width: 0;
-    margin-left: -7px;
-    margin-right: 15px;
-  }
-}
-
-.container__deadline {
-  text-align: left;
-}
-.btnWorkChild{
-  margin-left: 11px;
-}
-.success{
-  color: #ffffff;
-  background-color: #67C23A;
-  margin-left: 10px;
-}
-.lastDeadline{
-  color: #ffffff;
-  background-color: #ff0000;
-  margin-left: 10px;
-}
+@import "src/assets/styles/home.scss";
 </style>

@@ -4,13 +4,14 @@
             <el-row>
             <el-col :span="24">
                 <div class="grid-content bg-purple-dark">
-                    <div class="logo">
+                    <div class="logo" @click="redirect('')">
                         <img width="97%" src="../assets/images/logo.png" alt=""/>
                     </div>
                     <div class="block">
                         <el-dropdown>
                             <span class="el-dropdown-link">
-                               <el-avatar :size="50" :src="circleUrl"></el-avatar>
+                               <el-avatar v-if="avatar" :size="50" :src="'http://vuecourse.zent.edu.vn/storage/users/'+ avatar"></el-avatar>
+                              <el-avatar v-else :size="50" :src=circleUrl></el-avatar>
                             </span>
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item><div @click="openModalProfile()">Thông tin tài khoản</div></el-dropdown-item>
@@ -48,12 +49,12 @@ export default {
   name: 'AdminLayout',
   data () {
       return {
-        circleUrl: "https://kynguyenlamdep.com/wp-content/uploads/2022/06/avatar-cute-meo-con-than-chet-700x695.jpg",
-        sizeList: ["large", "medium", "small"],
+        circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
         dialogProfile:false,
         info_name:"",
         info_email:"",
         ìnfo_phone:"",
+        avatar:"",
       }
     },
   mounted() {
@@ -70,6 +71,7 @@ export default {
           this.info_name = _.get(res, 'data.name', '')
           this.info_email = _.get(res, 'data.email', '')
           this.ìnfo_phone = _.get(res, 'data.phone', '')
+          this.avatar = _.get(res, 'data.avatar', '')
         })
       },
       openModalProfile(){

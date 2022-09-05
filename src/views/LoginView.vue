@@ -96,6 +96,14 @@ export default {
     redirect(value){
             this.$router.push({ path:`/${value}`})
     }
+  },
+  watch:{
+    email(){
+      this.errorEmail = ""
+    },
+    password(){
+      this.errorPass=""
+    }
   }
 }
 </script>

@@ -5,9 +5,10 @@
       <div class="infor">
         <el-row>
           <el-col :span="12">
-            <p>Ảnh hiện tại</p>
-            <div class="grid-content bg-purple">
-              <img id="img_user" :src="'http://vuecourse.zent.edu.vn/storage/users/'+ avatar" alt="">
+            <p>Ảnh</p>
+            <div class="grid-content bg-purple" @click="onclickUploadAvatar()">
+              <img v-if="avatar==='Đang cập nhật'" id="img_user" src="../assets/images/avatar-facebook-mac-dinh-nam.jpeg" alt="">
+              <img v-else id="img_user" :src="'http://vuecourse.zent.edu.vn/storage/users/'+ avatar" alt="">
             </div>
           </el-col>
           <el-col :span="12"><div class="grid-content bg-purple-light">
@@ -17,12 +18,9 @@
                 <el-input placeholder="Nhập họ tên" v-model="name"></el-input>
                 <span style="color: red">{{errorName}}</span>
               </el-form-item>
-              <el-form-item label="Ảnh mới">
-                <label class="custom-file-upload">
-                  Tải ảnh
-                  <input type="file" @change="onchangeFile">
-                </label>
-              </el-form-item>
+              <input name="fileImport" ref="file" type="file" id="inputUploadAvatar"
+                     style="visibility: hidden; height: 0; display: none"
+                     class="" @change="onChangeFile"/>
               <el-form-item>
                 <el-button @click="redirect('')">Huỷ</el-button>
                 <el-button type="primary" @click="handleChangeInfo()">Lưu</el-button>
@@ -93,98 +91,138 @@ export default {
       'authUser'
     ])
   },
-    methods:{
-      ...mapMutations('auth', [
-        'updateAuthUser'
-      ]),
-      ...mapActions('auth', ['logout']),
-        redirect(value){
-          this.resetForm();
-          this.resetError();
-          this.$router.push({ path:`/${value}`})
-        },
-      getAuthUser() {
-        api.getAuthUser().then((res) => {
-          this.updateAuthUser(_.get(res, 'data'))
-          this.name = _.get(res, 'data.name', '')
-          this.avatar = _.get(res, 'data.avatar', '')
+  methods:{
+    ...mapMutations('auth', [
+      'updateAuthUser'
+    ]),
+    ...mapActions('auth', ['logout']),
+      redirect(value){
+        this.resetForm();
+        this.resetError();
+        this.$router.push({ path:`/${value}`})
+      },
+    onclickUploadAvatar(){
+      this.$refs.file.value = null;
+      document.getElementById('inputUploadAvatar').click();
+    },
+    onChangeFile() {
+      this.file = this.$refs.file.files[0];
+      const data = new FormData();
+      data.append('avatar', this.file);
+      data.append('name', this.name)
+      api.changInfo(data).then(()=>{
+        this.resetForm()
+        this.resetError()
+        this.getAuthUser()
+        this.$message({
+          type: 'success',
+          message: 'Cập nhật thành công',
         })
-      },
-      handleChangePass(){
-        if(this.validatePass()){
-          let data ={
-            password: this.newPass,
-            password_confirmation: this.newPassConfirm
-            }
-          api.changePass(data).then(()=>{
-            this.logout();
-            this.$message({
-              type: "success",
-              message: "Cập nhật thành công"
-            })
-          }).catch(()=>{
-            this.$message({
-              type: "error",
-              message: "Cập nhật thất bại"
-            })
-          })
-        }
-      },
-      onchangeFile(e){
-        this.file = e.target.files[0]
-      },
-      handleChangeInfo(){
-        if(this.name.length ===0 || this.name.length < 2 ){
-          this.errorName = "Tên phải lớn hơn hoặc bằng 2 ký tự"
-        }else{
-          let data = new FormData();
-          data.append('name', this.name)
-          if(this.file.length !== 0){
-            data.append('avatar', this.file)
-            console.log(this.file)
-          }
-          api.changInfo(data).then(()=>{
-            this.resetForm()
-            this.resetError()
-            this.getAuthUser()
-            this.$message({
-              type: 'success',
-              message: 'Cập nhật thành công',
-            })
-          }).catch(()=>{
-            this.$message({
-              type: 'error',
-              message: 'Cập nhật thất bại',
-            })
-          })
-        }
+      }).catch(()=>{
+        this.$message({
+          type: 'error',
+          message: 'Cập nhật thất bại',
+        })
+        this.resetForm()
+        this.resetError()
+        this.getAuthUser()
+      })
 
-      },
-      validatePass(){
-        let error = false;
-        if(this.newPass.length===0){
-          this.errorNewPass="Mật khẩu không được để trống!"
-          error = true;
-        }
-        if(this.newPassConfirm.length===0){
-          this.errorPassConfirm="Mật khẩu xác nhận không được để trống!"
-          error = true;
-        }
-        if(this.newPassConfirm !== this.newPass){
-          this.errorPassConfirm="Mật khẩu xác nhận phải giống mật khẩu!"
-          error = true;
-        }
-        return !error;
-      },
-      resetForm(){
-        this.newPass='';
-        this.newPassConfirm='';
-      },
-      resetError() {
-        this.errorNewPass="";
-        this.errorPassConfirm=""
+    },
+    getAuthUser() {
+      api.getAuthUser().then((res) => {
+        this.updateAuthUser(_.get(res, 'data'))
+        this.name = _.get(res, 'data.name', '')
+        this.avatar = _.get(res, 'data.avatar', '')?_.get(res, 'data.avatar', ''):'Đang cập nhật'
+      })
+    },
+    handleChangePass(){
+      if(this.validatePass()){
+        let data ={
+          password: this.newPass,
+          password_confirmation: this.newPassConfirm
+          }
+        api.changePass(data).then(()=>{
+          this.logout();
+          this.$message({
+            type: "success",
+            message: "Cập nhật thành công"
+          })
+        }).catch(()=>{
+          this.$message({
+            type: "error",
+            message: "Cập nhật thất bại"
+          })
+        })
       }
+    },
+    handleChangeInfo(){
+      if(this.name.length ===0 || this.name.length < 2 ){
+        this.errorName = "Tên phải lớn hơn hoặc bằng 2 ký tự"
+      }else{
+        let data = new FormData();
+        data.append('name', this.name)
+        if(this.file.length !== 0){
+          data.append('avatar', this.file)
+          console.log(this.file)
+        }
+        api.changInfo(data).then(()=>{
+          this.resetForm()
+          this.resetError()
+          this.getAuthUser()
+          this.$message({
+            type: 'success',
+            message: 'Cập nhật thành công',
+          })
+        }).catch(()=>{
+          this.$message({
+            type: 'error',
+            message: 'Cập nhật thất bại',
+          })
+          this.resetForm()
+          this.resetError()
+          this.getAuthUser()
+        })
+      }
+
+    },
+    validatePass(){
+      let error = false;
+      if(this.newPass.length===0){
+        this.errorNewPass="Mật khẩu không được để trống!"
+        error = true;
+      }
+      if(this.newPassConfirm.length===0){
+        this.errorPassConfirm="Mật khẩu xác nhận không được để trống!"
+        error = true;
+      }
+      if(this.newPassConfirm !== this.newPass){
+        this.errorPassConfirm="Mật khẩu xác nhận phải giống mật khẩu!"
+        error = true;
+      }
+      return !error;
+    },
+    resetForm(){
+      this.newPass='';
+      this.newPassConfirm='';
+    },
+    resetError() {
+      this.errorName=""
+      this.errorNewPass="";
+      this.errorPassConfirm=""
     }
+  },
+  watch:{
+    newPass(){
+      this.errorNewPass = ""
+    },
+    newPassConfirm(){
+      this.errorPassConfirm = ""
+    },
+    name(){
+      this.errorName =""
+    }
+  }
 }
 </script>
 <style lang="scss" scoped>
@@ -206,7 +244,9 @@ input[type="file"] {
        }
        #img_user{
         width: 400px;
-        height: 500px;
+        height: 400px;
+        border-radius: 50%;
+         border: 1px solid #ccc;
        }
     }
     .changepass{
