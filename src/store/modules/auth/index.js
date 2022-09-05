@@ -15,7 +15,6 @@ export default {
       },
 
       updateAccessToken (state, token) {
-        console.log(token);
         state.accessToken = token
       },
       updateAuthUser (state, authUser) {

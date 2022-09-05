@@ -36,6 +36,11 @@
                     <div class="grid-content bg-purple-dark list__task__content__text"
                          @click="openModalDetailCard(listItem.id)">
                       <el-row>
+                        <div v-if="listItem.path">
+                          <img style="width: 100%" :src="`http://vuecourse.zent.edu.vn/storage/${listItem.path}`" alt="">
+                        </div>
+                      </el-row>
+                      <el-row>
                         <el-col :span="24">
                           <div class="grid-content bg-purple-dark itemTagContainer"
                                v-for="itemTag in listItem.labels" :key="itemTag.id">
@@ -617,6 +622,7 @@ export default {
   name: "HomeView",
   data() {
     return {
+      listFileCard:[],
       checkDeadline:false,
       listTagCard:[],
       id_tag:'',
@@ -690,9 +696,10 @@ export default {
     }
   },
   mounted() {
-    this.getList();
     this.deadline = moment();
+    this.getList();
   },
+
   methods: {
     //Thẻ
     // handleProgressBar(id){
@@ -984,6 +991,7 @@ export default {
           message: 'Tải file lên thành công'
         })
         this.detailCard(this.id_card)
+        this.getList()
       }).catch(()=>{
         this.$message({
           type: 'error',
@@ -991,6 +999,7 @@ export default {
         })
       })
       this.detailCard(this.id_card)
+      this.getList()
     },
     clickUploadFile(){
       this.$refs.file.value = null;
@@ -1019,15 +1028,17 @@ export default {
         }
         api.updateDeadline(data, this.id_card).then(() => {
           this.openSelectDeadline = false;
-          this.detailCard(this.id_card)
           this.$message({
             showClose: true,
             type: 'success',
             message: 'Cập nhật thời gian hết hạn thành công'
           });
+          this.getList()
+          this.detailCard(this.id_card)
         })
       } else {
         this.openSelectDeadline = false;
+        this.getList()
         this.detailCard(this.id_card)
         this.$message({
           showClose: true,
@@ -1035,6 +1046,8 @@ export default {
           message: 'Ngày hết hạn chưa được cập nhật. Vui lòng chọn thời gian cho thẻ để cập nhật'
         });
       }
+      this.getList()
+      this.detailCard(this.id_card)
     },
     updateStatusWorkChil(check_list_child) {
       let data = {
@@ -1262,7 +1275,6 @@ export default {
         if(_.get(res, 'data.data.deadline')){
           if(moment(_.get(res, 'data.data.deadline')).format('X') < moment().format('X')){
             this.checkDeadline = true
-            console.log( this.checkDeadline )
           }
         }
         // this.handleProgressBar(this.id_card)
@@ -1361,8 +1373,23 @@ export default {
     },
     //list
     getList() {
-      api.getList().then((res) => {
+      api.getList().then(async (res) => {
         this.directories = res.data.data
+        for (const value of this.directories) {
+          await Promise.all(value.cards.map(async (val) => {
+            await api.detailCard(val.id).then(async (res)=>{
+              if(res.data.data.files.length !==0){
+                val.path = await res.data.data.files[0].path
+              }
+            })
+          }))
+        }
+
+        setTimeout(() => {
+          this.directories.push([])
+          this.directories.pop()
+        }, 100)
+        console.log(this.directories)
       })
     },
     handleCreateList() {

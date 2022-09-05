@@ -2,10 +2,10 @@ import axios from 'axios'
 import store from "../store";
 import router from "../router";
 
-const baseUrl = 'http://vuecourse.zent.edu.vn';
+const baseUrl = process.env.VUE_APP_BASE_URL;
 
 export const apiAxios = axios.create({
-  baseURL:`${baseUrl}/api`,
+  baseURL:`${baseUrl}api`,
   headers: {
     post: {
       'Content-Type': 'application/json'
