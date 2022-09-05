@@ -65,7 +65,7 @@
                       </el-dropdown>
                     </span>
                       <p class="infoDeadline">
-                      <span>
+                      <span >
                          <i class="el-icon-time">
                            <span v-if="listItem.deadline">
                             {{listItem.deadline}}
@@ -186,7 +186,7 @@
                 </div>
               </el-col>
               <el-col :span="23">
-                <div class="grid-content bg-purple-light" style="text-align: left">
+                <div class="grid-content bg-purple-light" style="text-align: left; cursor: pointer">
                   <div>
                     <h2 v-if="updateTitleCard===false" @click="updateTitleCard=true">{{ detailTitleCard }}</h2>
                     <div v-else>
@@ -241,7 +241,7 @@
                     {{ deadline_dt }}
                   </el-checkbox>
                   <span v-if="statusCard ===true " class="success">Đã hoàn thành</span>
-                  <span v-if="checkDeadline === true && statusCard !== true" class="lastDeadline">Quá hạn</span>
+<!--                  <span v-if="checkDeadline === true && statusCard !== true" class="lastDeadline">Quá hạn</span>-->
                 </div>
               </div>
             </el-col>
@@ -272,7 +272,6 @@
                       </el-input>
                     </div>
                   </el-row>
-
                 </div>
               </el-col>
             </div>
@@ -383,7 +382,7 @@
                 <el-col :span="5">
                   <div class="grid-content bg-purple-light">
                     <el-dropdown trigger="click">
-                      <span class="el-dropdown-link">
+                      <span class="el-dropdown-link" style="cursor: pointer">
                         <i class="el-icon-more"></i>
                       </span>
                       <el-dropdown-menu slot="dropdown">
@@ -1017,6 +1016,7 @@ export default {
           type: 'success',
           message: 'Cập nhật trạng thái thẻ thành công'
         });
+        this.detailCard(this.id_card)
       }).catch(() => {
 
       })
@@ -1516,6 +1516,7 @@ export default {
       this.updateWork = "";
       this.workChil = "";
       this.updateWorkChil = "";
+      this.statusCard="";
     },
     resetError() {
       this.errorContentTag ="";
